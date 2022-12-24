@@ -1,0 +1,4 @@
+# Aplikacja na początkowej stronie powinno wyświetlić panel do wyszukiwania książek po tytule, autorze i gatunkach
+http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&author=F. Scott Fitzgerald
+# Aplikacja na początkowej stronie powinno wyświetlić najbardziej popularne książki na podstawie wystawionych ocen
+http://localhost:5000/books/popular
