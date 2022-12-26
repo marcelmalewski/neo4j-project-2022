@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
-const books = require("./routes/books");
+const books = require("./routes/books/books");
+const comments = require("./routes/comments/comments");
+const ratings = require("./routes/ratings/ratings");
 //TODO dodac jakies "/api/v1/" do kazdego endpointu
 //TODO dodac constrainty na start
 //TODO nie uzywam średnikow
@@ -12,6 +14,8 @@ try {
   require("./config/neo4jDriver");
 
   app.use("/books", books);
+  app.use("/books/:id/comments", comments);
+  app.use("/books/:id/ratings", ratings);
 
   console.log(`Connected to Neo4J.`);
   const port = process.env.PORT || 5000;

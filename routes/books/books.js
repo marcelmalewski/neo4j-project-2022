@@ -1,34 +1,15 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../config/neo4jDriver");
-const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
+const driver = require("../../config/neo4jDriver");
+const { txWrite, txRead } = require("../../utils/neo4jSessionUtils");
+const { generateGetBooksQuery } = require("./booksUtils");
 //error = res.status.send
 //TODO jaki error status kiedy
 //TODO dodac unique id
-//ok = res.json
 
 router.get("/", async (req, res) => {
   const session = driver.session();
-  const { title, author, genres } = req.query;
-  let query = "MATCH (book:Book) ";
-  let whereConditions = [];
-
-  if (title) {
-    whereConditions.push(`book.title = "${title}"`);
-  }
-  if (author) {
-    whereConditions.push(`(book)-[:WRITTEN_BY]->(:Author {name: '${author}'})`);
-  }
-  if (genres) {
-    const genresAsArr = genres.split(",").map((genre) => genre.trim());
-    genresAsArr.forEach((genre) => {
-      whereConditions.push(`(book)-[:HAS_GENRE]->(:Genre {name: '${genre}'})`);
-    });
-  }
-  if (whereConditions.length > 0) {
-    query += `WHERE ${whereConditions.join(" AND ")} `;
-  }
-  query += "RETURN book";
+  const query = generateGetBooksQuery(req);
 
   const readTxResultPromise = txRead(session, query);
   readTxResultPromise
@@ -39,10 +20,11 @@ router.get("/", async (req, res) => {
     .then(() => session.close());
 });
 
-router.get("/popular/{limit}", async (req, res) => {
+router.get("/popular/:limit", async (req, res) => {
   const session = driver.session();
   const limit = req.params.limit;
-  const query = `MATCH (book:Book)
+  const query = `
+    MATCH (book:Book)
     OPTIONAL MATCH (:Client)-[r:RATED]->(book)
     WITH book, count(r) as ratings
     RETURN book, COALESCE(ratings, 0) as ratings
@@ -58,6 +40,52 @@ router.get("/popular/{limit}", async (req, res) => {
     .then(() => session.close());
 });
 
+router.get("/details/:id", async (req, res) => {
+  const session = driver.session();
+  const id = req.params.id;
+  const query = `
+  MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {id: '${id}'})-[:HAS_GENRE]->(g:Genre),
+    (book)-[:PUBLISHED_BY]->(p:PublishingHouse),
+    (book)<-[rated:RATED]-(:Client)
+  WITH book,
+    collect(distinct g.name) as genres,
+    collect(distinct properties(a)) as authors,
+    p, count(rated.rating) as number_of_ratings, round(avg(rated.rating), 2) as average_rating
+  RETURN
+    book.title as title,
+    book.id as id,
+    book.image_link as image_link,
+    book.description as description,
+    book.release_date as release_date,
+    genres,
+    authors,
+    p.name as publishing_house,
+    apoc.temporal.format(book.release_date, "yyyy") as release_year,
+    number_of_ratings,
+    average_rating`;
+
+  const readTxResultPromise = txRead(session, query);
+  readTxResultPromise
+    .then((result) => {
+      const bookDetails = {
+        title: result.records[0].get("title"),
+        image_link: result.records[0].get("image_link"),
+        description: result.records[0].get("description"),
+        release_date: result.records[0].get("release_date"),
+        genres: result.records[0].get("genres"),
+        authors: result.records[0].get("authors"),
+        publishing_house: result.records[0].get("publishing_house"),
+        release_year: result.records[0].get("release_year"),
+        number_of_ratings: result.records[0].get("number_of_ratings"),
+        average_rating: result.records[0].get("average_rating"),
+      };
+      res.json(bookDetails);
+    })
+    .catch((error) => res.status(500).send(error))
+    .then(() => session.close());
+});
+
+//TODO kazda książka musi mieć przynajmniej jednego autora i jeden gatunek moze jakas walidacja
 router.post("/", async (req, res) => {
   const id = req.body.id;
   const title = req.body.title;
