@@ -1,6 +1,10 @@
 generateGetBooksQuery = (req) => {
-  const { title, authors, genres } = req.query;
-  let query = "MATCH (book:Book) ";
+  //TODO dodac walidacje parametrow
+  const { title, authors, genres, sortBy, sortOrder } = req.query;
+  let query =
+    sortBy === "avgRating"
+      ? "MATCH (book:Book)<-[rated:RATED]-(:Client)"
+      : "MATCH (book:Book) ";
   let whereConditions = [];
 
   if (title) {
@@ -21,7 +25,22 @@ generateGetBooksQuery = (req) => {
   if (whereConditions.length > 0) {
     query += `WHERE ${whereConditions.join(" AND ")} `;
   }
+  if (sortBy === "avgRating") {
+    query += `WITH book, round(avg(rated.rating), 2) as average_rating `;
+  }
+
   query += "RETURN book";
+
+  if (sortBy) {
+    const parsedSortOrder = sortOrder ? sortOrder : "asc";
+    if (sortBy === "title") {
+      query += ` ORDER BY book.title ${parsedSortOrder}`;
+    } else if (sortBy === "releaseDate") {
+      query += ` ORDER BY book.release_date ${parsedSortOrder}`;
+    } else {
+      query += ` ORDER BY average_rating ${parsedSortOrder}`;
+    }
+  }
 
   return query;
 };

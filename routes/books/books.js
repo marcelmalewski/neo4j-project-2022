@@ -10,6 +10,7 @@ const { generateGetBooksQuery } = require("./booksUtils");
 router.get("/", async (req, res) => {
   const session = driver.session();
   const query = generateGetBooksQuery(req);
+  console.log(query);
 
   const readTxResultPromise = txRead(session, query);
   readTxResultPromise
