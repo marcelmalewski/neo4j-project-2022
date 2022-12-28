@@ -6,17 +6,17 @@ CREATE (adventure:Genre {name: "Adventure"})
 CREATE (mystery:Genre {name: "Mystery"})
 
 CREATE
-  (b1:Book {id: "1", title: "Pride and Prejudice", description: "Classic nove", release_date: date("1813-01-01"), image_link: "example.com" })-[:WRITTEN_BY]->(:Author { id: "1", name: "Jane Austen" }),
-  (b2:Book {id: "2", title: "The Great Gatsby", description: "Tragedy novel", release_date: date("1925-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"2", name: "F. Scott Fitzgerald" }),
-  (b3:Book {id: "3", title: "To Kill a Mockingbird", description: "Award-winnin", release_date: date("1960-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"3", name: "Harper Lee" }),
-  (b4:Book {id: "4", title: "One Hundred Years of Solitude", description: "Magical real", release_date: date("1967-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"4", name: "Gabriel García Márquez" }),
-  (b5:Book {id: "5", title: "Moby-Dick", description: "Adventure nov", release_date: date("1851-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"5", name: "Herman Melville" }),
-  (b6:Book {id: "6", title: "Jane Eyre", description: "Romantic nove", release_date: date("1847-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"6", name: "Charlotte Brontë" }),
-  (b7:Book {id: "7", title: "Wuthering Heights", description: "Romantic nove", release_date: date("1847-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"7", name: "Emily Brontë" }),
-  (b8:Book {id: "8", title: "The Catcher in the Rye", description: "Coming-of-age", release_date: date("1951-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"8", name: "J.D. Salinger" }),
-  (b9:Book {id: "9", title: "The Picture of Dorian Gray", description: "Gothic nove", release_date: date("1890-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"9", name: "Oscar Wilde" }),
-  (b10:Book {id: "10", title: "The Adventures of Huckleberry Finn", description: "Adventure nov", release_date: date("1884-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { id:"10", name: "Mark Twain" }),
-  (Harry:Book {id: "11", title: "Harry Potter", description: "Cool book", release_date: date("2020-05-12"), image_link: ""})-[:WRITTEN_BY]->(Rowling:Author {id: "11", name: "J.K Rowling"})
+  (b1:Book {uuid: apoc.create.uuid(), title: "Pride and Prejudice", description: "Classic nove", release_date: date("1813-01-01"), image_link: "example.com" })-[:WRITTEN_BY]->(:Author { uuid: "1", name: "Jane Austen" }),
+  (b2:Book {uuid: apoc.create.uuid(), title: "The Great Gatsby", description: "Tragedy novel", release_date: date("1925-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"2", name: "F. Scott Fitzgerald" }),
+  (b3:Book {uuid: apoc.create.uuid(), title: "To Kill a Mockingbird", description: "Award-winnin", release_date: date("1960-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"3", name: "Harper Lee" }),
+  (b4:Book {uuid: "4", title: "One Hundred Years of Solitude", description: "Magical real", release_date: date("1967-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"4", name: "Gabriel García Márquez" }),
+  (b5:Book {uuid: "5", title: "Moby-Dick", description: "Adventure nov", release_date: date("1851-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"5", name: "Herman Melville" }),
+  (b6:Book {uuid: "6", title: "Jane Eyre", description: "Romantic nove", release_date: date("1847-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"6", name: "Charlotte Brontë" }),
+  (b7:Book {uuid: "7", title: "Wuthering Heights", description: "Romantic nove", release_date: date("1847-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"7", name: "Emily Brontë" }),
+  (b8:Book {uuid: "8", title: "The Catcher in the Rye", description: "Coming-of-age", release_date: date("1951-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"8", name: "J.D. Salinger" }),
+  (b9:Book {uuid: "9", title: "The Picture of Dorian Gray", description: "Gothic nove", release_date: date("1890-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"9", name: "Oscar Wilde" }),
+  (b10:Book {uuid: "10", title: "The Adventures of Huckleberry Finn", description: "Adventure nov", release_date: date("1884-01-01"), image_link: "" })-[:WRITTEN_BY]->(:Author { uuid:"10", name: "Mark Twain" }),
+  (Harry:Book {uuid: "11", title: "Harry Potter", description: "Cool book", release_date: date("2020-05-12"), image_link: ""})-[:WRITTEN_BY]->(Rowling:Author {uuid: "11", name: "J.K Rowling"})
 
 CREATE (b1)-[:YEAR_OF_PUBLICATION]->(y1:Year {year: "1813"})
 CREATE (b2)-[:YEAR_OF_PUBLICATION]->(y2:Year {year: "1925"})
@@ -61,11 +61,11 @@ CREATE (b9)-[:HAS_GENRE]->(fiction)
 CREATE (b10)-[:HAS_GENRE]->(adventure)
 CREATE (Harry)-[:HAS_GENRE]->(Fantasy)
 
-CREATE (notLoggedClient:Client {id: "1", name: "Not logged client"})
-CREATE (client:Client {id: "2", name: "Jan Kowalski"})
-CREATE (client2:Client {id: "3", name: "Adam Nowak"})
-CREATE (client3:Client {id: "4", name: "Krzysztof Krawczyk"})
-CREATE (client4:Client {id: "5", name: "Janusz Kowalski"})
+CREATE (notLoggedClient:Client {uuid: apoc.create.uuid(), name: "Not logged client"})
+CREATE (client:Client {uuid: "2", name: "Jan Kowalski"})
+CREATE (client2:Client {uuid: apoc.create.uuid(), name: "Adam Nowak"})
+CREATE (client3:Client {uuid: "4", name: "Krzysztof Krawczyk"})
+CREATE (client4:Client {uuid: "5", name: "Janusz Kowalski"})
 
 CREATE (client)-[:RATED {rating: 5, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(Harry)
 CREATE (client2)-[:RATED {rating: 4, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(Harry)

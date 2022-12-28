@@ -2,12 +2,24 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const driver = require("../config/neo4jDriver");
 const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
-const { generateGetBooksQuery } = require("../utils/booksUtils");
-//error = res.status.send
-//TODO jaki error status kiedy
-//TODO dodac unique id
+const {
+  generateGetBooksQuery,
+  isSortByValid,
+  areGenresValid,
+  isSortOrderValid,
+  isLimitValid,
+} = require("../utils/booksUtils");
 
 router.get("/", async (req, res) => {
+  if (!isSortByValid(req.query.sortBy))
+    return res.status(400).send("Invalid sortBy query parameter");
+
+  if (!isSortOrderValid(req.query.sortOrder))
+    return res.status(400).send("Invalid sortOrder query parameter");
+
+  if (!areGenresValid(req.query.genres))
+    return res.status(400).send("Invalid genres query parameter");
+
   const session = driver.session();
   const query = generateGetBooksQuery(req);
 
@@ -21,8 +33,10 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/popular/:limit", async (req, res) => {
+  if (!isLimitValid(req.params.limit))
+    return res.status(400).send("Invalid limit parameter");
+
   const session = driver.session();
-  //TODO walidacja limitu
   const limit = req.params.limit;
   const query = `
     MATCH (book:Book)
@@ -40,9 +54,8 @@ router.get("/popular/:limit", async (req, res) => {
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());
 });
-
+//TODO walidacja czy istnieje ksiazka brak resultatow i brak errora oznacza zle id
 router.get("/details/:id", async (req, res) => {
-  //TODO walidacja czy istnieje ksiazka o takim id
   const session = driver.session();
   const id = req.params.id;
   const query = `

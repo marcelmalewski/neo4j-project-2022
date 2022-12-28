@@ -6,7 +6,7 @@
 #### Opcjonalne parametry:
 * `title` - filtrowanie po tytule
 * `authors` - filtrowanie po autorach
-* `genres` - filtrowanie po gatunkach
+* `genres` - filtrowanie po gatunkach: `Fantasy`, `Romance`, `Fiction`, `Magical Realism`, `Adventure`, `Mystery`
 * `sortBy` - sortowanie po wartościach: `title`|`releaseDate`|`avgRating`
 * `sortOrder` - sortowanie rosnąco lub malejąco: `asc`|`desc` (default: `asc`)
 #### Przykładowe zapytanie:
@@ -15,7 +15,7 @@ http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&a
 ### 2. Pobierz popularne książki (najczęściej oceniane)
 #### Endpoint: GET /books/popular/:limit
 #### parametry:
-* `limit` - limit wyników
+* `limit` - limit wyników (liczba większa od zera)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/popular/5
 

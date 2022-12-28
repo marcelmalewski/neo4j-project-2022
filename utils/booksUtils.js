@@ -1,5 +1,6 @@
+const GENRES = require("./consts");
+
 generateGetBooksQuery = (req) => {
-  //TODO dodac walidacje parametrow
   const { title, authors, genres, sortBy, sortOrder } = req.query;
   let query =
     sortBy === "avgRating"
@@ -45,6 +46,40 @@ generateGetBooksQuery = (req) => {
   return query;
 };
 
+const isSortByValid = (sortBy) => {
+  return (
+    sortBy === undefined ||
+    sortBy === "title" ||
+    sortBy === "releaseDate" ||
+    sortBy === "avgRating"
+  );
+};
+
+const isSortOrderValid = (sortOrder) => {
+  return sortOrder === undefined || sortOrder === "asc" || sortOrder === "desc";
+};
+
+const areGenresValid = (genres) => {
+  if (genres === undefined) return true;
+  let genresAreValid = true;
+
+  const genresAsArr = genres.split(",").map((genre) => genre.trim());
+  genresAsArr.forEach((genre) => {
+    if (!GENRES.includes(genre)) genresAreValid = false;
+  });
+
+  return genresAreValid;
+};
+
+const isLimitValid = (limit) => {
+  const num = Number(limit);
+  return limit === undefined || (Number.isInteger(num) && num > 0);
+};
+
 module.exports = {
   generateGetBooksQuery,
+  isSortByValid,
+  isSortOrderValid,
+  areGenresValid,
+  isLimitValid,
 };
