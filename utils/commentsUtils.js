@@ -1,4 +1,4 @@
-const { txWrite } = require("../../utils/neo4jSessionUtils");
+const { txWrite } = require("./neo4jSessionUtils");
 
 handleCommentPostRequest = (req, res, query, session) => {
   const writeTxResultPromise = txWrite(session, query);

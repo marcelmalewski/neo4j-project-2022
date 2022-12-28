@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../../config/neo4jDriver");
-const { txWrite } = require("../../utils/neo4jSessionUtils");
+const driver = require("../config/neo4jDriver");
+const { txWrite } = require("../utils/neo4jSessionUtils");
 //TODO dodac updatowanie oceny
 router.post("/", (req, res) => {
   //TODO walidacja gdy juz stworzyl swoją ocene to error
   const session = driver.session();
-  const clientId = "5";
-  const bookId = req.params.id;
+
   const rating = req.body.rating;
   const expiryDate =
     req.body.expiryDate === undefined

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../../config/neo4jDriver");
-const { handleCommentPostRequest } = require("./commentsUtils");
+const driver = require("../config/neo4jDriver");
+const { handleCommentPostRequest } = require("../utils/commentsUtils");
 
 router.post("/", (req, res) => {
   const session = driver.session();
