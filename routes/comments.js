@@ -8,7 +8,7 @@ router.post("/", (req, res) => {
   //TODO klient z ciasteczka plis autentykacja
   const clientId = 1;
   const bookId = req.params.id;
-  const { comment } = req.body;
+  const comment = req.body.comment;
   const query = `
     MATCH (book:Book {id: '${bookId}'})
     MATCH (client:Client {id: '${clientId}'})
@@ -21,7 +21,7 @@ router.post("/", (req, res) => {
 router.post("/not-logged-in-client", (req, res) => {
   const session = driver.session();
   const id = req.params.id;
-  const { comment } = req.body;
+  const comment = req.body.comment;
   const query = `
     MATCH (book:Book {id: '${id}'})
     MATCH (client:Client {name: "Not logged client"})

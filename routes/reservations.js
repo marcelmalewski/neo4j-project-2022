@@ -26,10 +26,11 @@ router.post("/", async (req, res) => {
   const session = driver.session();
   const clientId = "5";
   const bookId = req.params.id;
-  const query = `MATCH (c:Client {id: '${clientId}'})
-                MATCH (b:Book {id: '${bookId}'})
-                CREATE (c)-[r:RESERVED {creation_date: date(), state_update_date: date(), state: 'not confirmed'}]->(b)
-                RETURN r`;
+  const query = `
+    MATCH (c:Client {id: '${clientId}'})
+    MATCH (b:Book {id: '${bookId}'})
+    CREATE (c)-[r:RESERVED {creation_date: date(), state_update_date: date(), state: 'not confirmed'}]->(b)
+    RETURN r`;
 
   const writeTxResultPromise = txWrite(session, query);
   writeTxResultPromise
@@ -47,9 +48,10 @@ router.patch("/", async (req, res) => {
   const bookId = req.params.id;
   //TODO walidacja czy rentalPeriod zostal podany i czy nie przekracza 60 dni
   const rentalPeriodInDays = req.body.rentalPeriodInDays;
-  const query = `MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-                SET r.rental_period_in_days = ${rentalPeriodInDays}
-                RETURN r`;
+  const query = `
+    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
+    SET r.rental_period_in_days = ${rentalPeriodInDays}
+    RETURN r`;
 
   const writeTxResultPromise = txWrite(session, query);
   writeTxResultPromise
@@ -65,9 +67,10 @@ router.patch("/confirm", async (req, res) => {
   const session = driver.session();
   const clientId = "5";
   const bookId = req.params.id;
-  const query = `MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-                SET r.state = 'confirmed', r.state_update_date = date()
-                RETURN r`;
+  const query = `
+    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
+    SET r.state = 'confirmed', r.state_update_date = date()
+    RETURN r`;
 
   const writeTxResultPromise = txWrite(session, query);
   writeTxResultPromise
@@ -84,8 +87,9 @@ router.delete("/", async (req, res) => {
   const session = driver.session();
   const clientId = "5";
   const bookId = req.params.id;
-  const query = `MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-                DELETE r`;
+  const query = `
+    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
+    DELETE r`;
 
   const writeTxResultPromise = txWrite(session, query);
   writeTxResultPromise

@@ -20,7 +20,8 @@ router.post("/books", async (req, res) => {
   //TODO walidacja podanych danych, tez autora i gatunkow
   //dopytac chatgpt bo jezeli authorzy juz istnieją to uzyc ich jak nie to stworzyć
   //genresl moge lokanie testowac
-  const query = `MATCH (publishingHouse:PublishingHouse {name: '${publishingHouse}'})
+  const query = `
+      MATCH (publishingHouse:PublishingHouse {name: '${publishingHouse}'})
       CREATE (book:Book {id: '${id}', title: '${title}', description: '${description}', release_date: '${releaseDate}', image_link: '${imageLink}'})
       CREATE (book)-[:PUBLISHED_BY]->(publishingHouse)
       RETURN book`;
@@ -50,7 +51,8 @@ router.put("/books/:id", async (req, res) => {
   //TODO walidacja podanych danych, tez autora i gatunkow
   //dopytac chatgpt bo jezeli authorzy juz istnieją to uzyc ich jak nie to stworzyć
   //genresl moge lokanie testowac
-  const query = `MATCH (book:Book {id: '${id}'})
+  const query = `
+      MATCH (book:Book {id: '${id}'})
       SET book.title = '${title}', book.description = '${description}', book.release_date = '${releaseDate}', book.image_link = '${imageLink}'
       RETURN book`;
 
@@ -66,7 +68,8 @@ router.put("/books/:id", async (req, res) => {
 router.delete("/books/:id", async (req, res) => {
   const session = driver.session();
   const id = req.params.id;
-  const query = `MATCH (book:Book {id: '${id}'})
+  const query = `
+      MATCH (book:Book {id: '${id}'})
       DETACH DELETE book
       RETURN book`;
 

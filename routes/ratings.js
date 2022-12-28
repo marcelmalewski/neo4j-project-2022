@@ -6,7 +6,6 @@ const { txWrite } = require("../utils/neo4jSessionUtils");
 router.post("/", (req, res) => {
   //TODO walidacja gdy juz stworzyl swoją ocene to error
   const session = driver.session();
-
   const rating = req.body.rating;
   const expiryDate =
     req.body.expiryDate === undefined

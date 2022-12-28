@@ -59,25 +59,25 @@ router.get("/details/:id", async (req, res) => {
   const session = driver.session();
   const id = req.params.id;
   const query = `
-  MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {id: '${id}'})-[:HAS_GENRE]->(g:Genre),
-    (book)-[:PUBLISHED_BY]->(p:PublishingHouse),
-    (book)<-[rated:RATED]-(:Client)
-  WITH book,
-    collect(distinct g.name) as genres,
-    collect(distinct properties(a)) as authors,
-    p, count(rated.rating) as number_of_ratings, round(avg(rated.rating), 2) as average_rating
-  RETURN
-    book.title as title,
-    book.id as id,
-    book.image_link as image_link,
-    book.description as description,
-    book.release_date as release_date,
-    genres,
-    authors,
-    p.name as publishing_house,
-    apoc.temporal.format(book.release_date, "yyyy") as release_year,
-    number_of_ratings,
-    average_rating`;
+    MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {id: '${id}'})-[:HAS_GENRE]->(g:Genre),
+      (book)-[:PUBLISHED_BY]->(p:PublishingHouse),
+      (book)<-[rated:RATED]-(:Client)
+    WITH book,
+      collect(distinct g.name) as genres,
+      collect(distinct properties(a)) as authors,
+      p, count(rated.rating) as number_of_ratings, round(avg(rated.rating), 2) as average_rating
+    RETURN
+      book.title as title,
+      book.id as id,
+      book.image_link as image_link,
+      book.description as description,
+      book.release_date as release_date,
+      genres,
+      authors,
+      p.name as publishing_house,
+      apoc.temporal.format(book.release_date, "yyyy") as release_year,
+      number_of_ratings,
+      average_rating`;
 
   const readTxResultPromise = txRead(session, query);
   readTxResultPromise
@@ -134,7 +134,6 @@ router.put("/:id", async (req, res) => {
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
-
   const session = driver.session();
   const readTxResultPromise = txWrite(
     session,
