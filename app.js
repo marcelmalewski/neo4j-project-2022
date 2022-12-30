@@ -7,17 +7,14 @@ const reservations = require("./routes/reservations");
 const { driver } = require("neo4j-driver");
 const { createConstraints } = require("./utils/appUtils");
 
-require("dotenv").config();
 app.use(express.json());
 
 //TODO dodac to do jakiejs instrukcji
 //Przy pierwszym uruchomieniu aplikacji odkomentować poniższą wersja startu serwera
-// i zakomentować tą pod tą, ponieważ w darmowej wersji neo4j nie można można dodać
+// i zakomentować tą niżej, ponieważ w darmowej wersji neo4j nie można można dodać
 // tworzenie constraintow pod warunkiem ,że nie istnieją
 
 // try {
-//   require("./config/neo4jDriver");
-//
 //   app.use("/books", books);
 //   app.use("/books/:id/comments", comments);
 //   app.use("/books/:id/ratings", ratings);
@@ -35,8 +32,6 @@ app.use(express.json());
 // }
 
 try {
-  require("./config/neo4jDriver");
-
   app.use("/books", books);
   app.use("/books/:id/comments", comments);
   app.use("/books/:id/ratings", ratings);

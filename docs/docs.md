@@ -1,4 +1,12 @@
 # Mini dokumentacja
+## Uruchamianie serwera:
+#### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
+pytanie czy przy puszu te developerskie rzeczy są obecne
+
+#### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
+* npm run prodStart
+* yarn prodStart
+
 ## Podstawowe endpointy:
 
 ### 1. Pobierz wszystkie książki
@@ -19,10 +27,19 @@ http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&a
 #### Przykładowe zapytanie:
 http://localhost:5000/books/popular/5
 
-### 3. Pobierz szczegóły książki po id
-#### Endpoint: GET /books/details/:bookId
+### 3. Pobierz szczegóły książki po uuid
+#### Endpoint: GET /books/details/:bookUUid
 #### zwraca:
-tytuł, zdjecie o ile istnieje, opis, data, gatunki, autorów, wydawnictwo, rok wydania, srednia ocen z iloscia glosow
+* tytuł
+* zdjęcie (o ile istnieje),
+* opis 
+* data
+* gatunki
+* autorów
+* wydawnictwo
+* rok wydania
+* średnia ocen (o ile istnieją oceny)
+* ilość głosów (o ile istnieją oceny)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/details/11
 

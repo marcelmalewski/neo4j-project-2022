@@ -54,21 +54,21 @@ router.get("/popular/:limit", async (req, res) => {
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());
 });
-//TODO walidacja czy istnieje ksiazka brak resultatow i brak errora oznacza zle id
-router.get("/details/:id", async (req, res) => {
+
+router.get("/details/:uuid", async (req, res) => {
   const session = driver.session();
-  const id = req.params.id;
+  const uuid = req.params.uuid;
   const query = `
-    MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {id: '${id}'})-[:HAS_GENRE]->(g:Genre),
-      (book)-[:PUBLISHED_BY]->(p:PublishingHouse),
-      (book)<-[rated:RATED]-(:Client)
+    MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {uuid: '${uuid}'})-[:HAS_GENRE]->(g:Genre),
+      (book)-[:PUBLISHED_BY]->(p:PublishingHouse)
+    OPTIONAL MATCH (book)<-[rated:RATED]-(:Client)
     WITH book,
       collect(distinct g.name) as genres,
       collect(distinct properties(a)) as authors,
       p, count(rated.rating) as number_of_ratings, round(avg(rated.rating), 2) as average_rating
     RETURN
       book.title as title,
-      book.id as id,
+      book.uuid as uuid,
       book.image_link as image_link,
       book.description as description,
       book.release_date as release_date,
@@ -82,7 +82,13 @@ router.get("/details/:id", async (req, res) => {
   const readTxResultPromise = txRead(session, query);
   readTxResultPromise
     .then((result) => {
+      if (result.records.length === 0)
+        res
+          .status(400)
+          .send({ message: `Book with uuid: ${uuid} do not exist` });
+
       const bookDetails = {
+        uuid: result.records[0].get("uuid"),
         title: result.records[0].get("title"),
         image_link: result.records[0].get("image_link"),
         description: result.records[0].get("description"),
@@ -101,8 +107,8 @@ router.get("/details/:id", async (req, res) => {
 });
 
 //TODO brak rezultatu rowna sie 400
-router.put("/:id", async (req, res) => {
-  const id = req.params.id;
+router.put("/:uuid", async (req, res) => {
+  const uuid = req.params.uuid;
   const title = req.body.title;
   const description = req.body.description;
   const releaseDate = req.body.releaseDate;
@@ -111,11 +117,11 @@ router.put("/:id", async (req, res) => {
   const session = driver.session();
   const readTxResultPromise = txWrite(
     session,
-    "MATCH (book:Book {id: $id}) " +
+    "MATCH (book:Book {uuid: $uuid}) " +
       "SET book.title = $title, book.description = $description, book.releaseDate = $releaseDate, book.imageLink = $imageLink " +
       "RETURN book",
     {
-      id,
+      uuid,
       title,
       description,
       releaseDate,
@@ -132,18 +138,18 @@ router.put("/:id", async (req, res) => {
 });
 
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
-router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
+router.delete("/:uuid", async (req, res) => {
+  const uuid = req.params.uuid;
   const session = driver.session();
   const readTxResultPromise = txWrite(
     session,
-    "MATCH (book:Book {id: $id}) DETACH DELETE book",
-    { id }
+    "MATCH (book:Book {uuid: $uuid}) DETACH DELETE book",
+    { uuid }
   );
 
   readTxResultPromise
     .then(() => {
-      res.json({ message: "Deleted book with id: " + id });
+      res.json({ message: "Deleted book with uuid: " + uuid });
     })
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());
