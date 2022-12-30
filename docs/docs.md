@@ -48,11 +48,11 @@ http://localhost:5000/books/details/11
 * dla zalogowanej osoby komentarz przypisany będzie do niej
   POST /books/:bookId/comments
 * dla niezalogowanej osoby komentarz będzie anonimowy
-  POST /books/:bookId/comments/not-logged-in-client
+  POST /books/:bookId/comments/not-logged-in-person
 #### zawartość body:
 * `comment` - komentarz
 #### Przykładowe zapytanie dla niezalogowanej osoby:
-http://localhost:5000/books/11/comments/not-logged-in-client
+http://localhost:5000/books/11/comments/not-logged-in-person
 #### Przykładowe zapytanie dla zalogowanej osoby:
 http://localhost:5000/books/11/comments
 

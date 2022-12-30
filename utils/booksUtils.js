@@ -1,4 +1,4 @@
-const GENRES = require("./consts");
+const { Genres } = require('./consts');
 
 generateGetBooksQuery = (req) => {
   const { title, authors, genres, sortBy, sortOrder } = req.query;
@@ -65,7 +65,7 @@ const areGenresValid = (genres) => {
 
   const genresAsArr = genres.split(",").map((genre) => genre.trim());
   genresAsArr.forEach((genre) => {
-    if (!GENRES.includes(genre)) genresAreValid = false;
+    if (!Genres.includes(genre)) genresAreValid = false;
   });
 
   return genresAreValid;

@@ -9,22 +9,26 @@ const {
   isSortOrderValid,
   isLimitValid,
 } = require("../utils/booksUtils");
+const {
+  handleNotFound,
+  handleInvalidQueryParameter,
+} = require("../utils/routesUtils");
 
-router.get("/", async (req, res) => {
+router.get("/", (req, res) => {
   if (!isSortByValid(req.query.sortBy))
-    return res.status(400).send("Invalid sortBy query parameter");
+    return handleInvalidQueryParameter(res, "sortBy", req.query.sortBy);
 
   if (!isSortOrderValid(req.query.sortOrder))
-    return res.status(400).send("Invalid sortOrder query parameter");
+    return handleInvalidQueryParameter(res, "sortOrder", req.query.orderBy);
 
   if (!areGenresValid(req.query.genres))
-    return res.status(400).send("Invalid genres query parameter");
+    return handleInvalidQueryParameter(res, "genres", req.query.genres);
 
   const session = driver.session();
   const query = generateGetBooksQuery(req);
 
-  const readTxResultPromise = txRead(session, query);
-  readTxResultPromise
+  const readTxResult = txRead(session, query);
+  readTxResult
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
@@ -32,7 +36,7 @@ router.get("/", async (req, res) => {
     .then(() => session.close());
 });
 
-router.get("/popular/:limit", async (req, res) => {
+router.get("/popular/:limit", (req, res) => {
   if (!isLimitValid(req.params.limit))
     return res.status(400).send("Invalid limit parameter");
 
@@ -46,8 +50,8 @@ router.get("/popular/:limit", async (req, res) => {
     ORDER BY ratings DESC
     LIMIT ${limit}`;
 
-  const readTxResultPromise = txRead(session, query);
-  readTxResultPromise
+  const readTxResult = txRead(session, query);
+  readTxResult
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
@@ -55,7 +59,7 @@ router.get("/popular/:limit", async (req, res) => {
     .then(() => session.close());
 });
 
-router.get("/details/:uuid", async (req, res) => {
+router.get("/details/:uuid", (req, res) => {
   const session = driver.session();
   const uuid = req.params.uuid;
   const query = `
@@ -79,13 +83,11 @@ router.get("/details/:uuid", async (req, res) => {
       number_of_ratings,
       average_rating`;
 
-  const readTxResultPromise = txRead(session, query);
-  readTxResultPromise
+  const readTxResult = txRead(session, query);
+  readTxResult
     .then((result) => {
       if (result.records.length === 0)
-        res
-          .status(400)
-          .send({ message: `Book with uuid: ${uuid} do not exist` });
+        return handleNotFound("Book", "uuid", uuid);
 
       const bookDetails = {
         uuid: result.records[0].get("uuid"),
@@ -107,7 +109,7 @@ router.get("/details/:uuid", async (req, res) => {
 });
 
 //TODO brak rezultatu rowna sie 400
-router.put("/:uuid", async (req, res) => {
+router.put("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
   const title = req.body.title;
   const description = req.body.description;
@@ -115,7 +117,7 @@ router.put("/:uuid", async (req, res) => {
   const imageLink = req.body.imageLink;
 
   const session = driver.session();
-  const readTxResultPromise = txWrite(
+  const readTxResult = txWrite(
     session,
     "MATCH (book:Book {uuid: $uuid}) " +
       "SET book.title = $title, book.description = $description, book.releaseDate = $releaseDate, book.imageLink = $imageLink " +
@@ -129,7 +131,7 @@ router.put("/:uuid", async (req, res) => {
     }
   );
 
-  readTxResultPromise
+  readTxResult
     .then((result) => {
       res.json(result.records[0].get("book").properties);
     })
@@ -138,33 +140,18 @@ router.put("/:uuid", async (req, res) => {
 });
 
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
-router.delete("/:uuid", async (req, res) => {
+router.delete("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
   const session = driver.session();
-  const readTxResultPromise = txWrite(
+  const writeTxResult = txWrite(
     session,
     "MATCH (book:Book {uuid: $uuid}) DETACH DELETE book",
     { uuid }
   );
 
-  readTxResultPromise
+  writeTxResult
     .then(() => {
       res.json({ message: "Deleted book with uuid: " + uuid });
-    })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
-});
-
-router.delete("/", async (req, res) => {
-  const session = driver.session();
-  const readTxResultPromise = txWrite(
-    session,
-    "MATCH (book:Book) DETACH DELETE book"
-  );
-
-  readTxResultPromise
-    .then(() => {
-      res.json({ message: "Deleted all books" });
     })
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());

@@ -1,4 +1,4 @@
-const GENRES = [
+const Genres = [
   "Fantasy",
   "Romance",
   "Fiction",
@@ -7,4 +7,12 @@ const GENRES = [
   "Mystery",
 ];
 
-module.exports = GENRES;
+const Roles = {
+  CLIENT: "CLIENT",
+  LIBRARIAN: "LIBRARIAN",
+};
+
+module.exports = {
+  Genres,
+  Roles,
+};

@@ -6,7 +6,7 @@ const createConstraints = async () => {
     await session.run(`
       CREATE CONSTRAINT FOR (book:Book) REQUIRE book.uuid IS UNIQUE;
       CREATE CONSTRAINT FOR (author:Author) REQUIRE author.uuid IS UNIQUE;
-      CREATE CONSTRAINT FOR (client:Client) REQUIRE client.uuid IS UNIQUE;`);
+      CREATE CONSTRAINT FOR (person:Person) REQUIRE person.login IS UNIQUE;`);
     console.log("Constraints created successfully");
   } catch (error) {
     console.log(error);
