@@ -30,7 +30,7 @@ router.post("/books", async (req, res) => {
 
   readTxResultPromise
     .then((result) => {
-      res.status(201).json(result.records[0].get("book").properties);
+      res.status(201).send(result.records[0].get("book").properties);
     })
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());

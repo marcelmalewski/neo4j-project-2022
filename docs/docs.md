@@ -1,11 +1,14 @@
 # Mini dokumentacja
 ## Uruchamianie serwera:
-#### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
+#### 1. Przygotowanie pliku .env
+
+#### 2. Uruchamianie
+* #### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
 pytanie czy przy puszu te developerskie rzeczy są obecne
 
-#### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
-* npm run prodStart
-* yarn prodStart
+* #### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
+  * npm run prodStart
+  * yarn prodStart
 
 ## Podstawowe endpointy:
 
@@ -14,9 +17,9 @@ pytanie czy przy puszu te developerskie rzeczy są obecne
 #### Opcjonalne parametry:
 * `title` - filtrowanie po tytule
 * `authors` - filtrowanie po autorach
-* `genres` - filtrowanie po gatunkach: `Fantasy`, `Romance`, `Fiction`, `Magical Realism`, `Adventure`, `Mystery`
-* `sortBy` - sortowanie po wartościach: `title`|`releaseDate`|`avgRating`
-* `sortOrder` - sortowanie rosnąco lub malejąco: `asc`|`desc` (default: `asc`)
+* `genres` - filtrowanie po gatunkach: `FANTASY`, `ROMANCE`, `FICTION`, `MAGICAL REALISM`, `ADVENTURE`, `MYSTERY` (wielkość liter dowolna)
+* `sortBy` - sortowanie po wartościach: `TITLE`|`RELEASEDATE`|`AVGRATING` (wielkość liter dowolna)
+* `sortOrder` - sortowanie rosnąco lub malejąco: `ASC`|`DESC` (default: `ASC`) (wielkość liter dowolna)
 #### Przykładowe zapytanie:
 http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&author=F. Scott Fitzgerald
 
@@ -46,11 +49,12 @@ http://localhost:5000/books/details/11
 ### 4. Dodawanie komentarza do książki
 #### Endpoint: POST:
 * dla zalogowanej osoby komentarz przypisany będzie do niej
+  (wymagany header: `Authorization: 'Bearer twoj_token'`)
   POST /books/:bookId/comments
 * dla niezalogowanej osoby komentarz będzie anonimowy
   POST /books/:bookId/comments/not-logged-in-person
 #### zawartość body:
-* `comment` - komentarz
+* `comment` - komentarz (nie może być pusty albo samymi spacjami)
 #### Przykładowe zapytanie dla niezalogowanej osoby:
 http://localhost:5000/books/11/comments/not-logged-in-person
 #### Przykładowe zapytanie dla zalogowanej osoby:
@@ -58,10 +62,11 @@ http://localhost:5000/books/11/comments
 
 ### 5. Dodawanie oceny książki
 * możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /books/:bookId/ratings
 #### zawartość body:
 * `rating` - ocena
-* `expiryDate` - kiedy ocena wygasa (opcjonalne)
+* `expiryDate` - kiedy ocena wygasa (opcjonalne) (default: `nie wygasa`)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/ratings
 
@@ -113,6 +118,25 @@ Posortowane malejąco.
 #### Endpoint: GET /books/:bookId/reservations/history
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations/history
+
+### 11. Rejestracja
+#### Endpoint: POST /register
+#### Body:
+* login (unikalny, długość > 3)
+* name (imie + spacje + nazwisko, np. "Jan Kowalski")
+* password (długość > 8)
+#### Przykładowe zapytanie:
+http://localhost:5000/register
+
+### 12. Logowanie
+#### Endpoint: POST /login
+#### Body:
+* login
+* password
+#### Body w responsie:
+* `accessToken` (używamy go przy endpointach wymajających bycia zalogowanym)
+#### Przykładowe zapytanie:
+http://localhost:5000/register
 
 ## Panel administracyjny
 W kodzie jest to nazwane jako `librarian` bardziej tematycznie

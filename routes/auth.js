@@ -14,6 +14,7 @@ const {
   isPasswordValid,
   sendRegisterRequest,
 } = require("../utils/authUtils");
+require("dotenv").config();
 
 router.post("/register", async (req, res) => {
   const { login, name, password } = req.body;
@@ -34,7 +35,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", (req, res) => {
   const session = driver.session();
   const { login, password } = req.body;
   const query = `MATCH (person:Person {login: '${login}'}) RETURN person`;
@@ -43,19 +44,26 @@ router.post("/login", async (req, res) => {
   writeTxResult
     .then(async (result) => {
       if (result.records.length === 0)
-        return handleNotFound("Person", "login", login);
+        return handleNotFound("Person", "login", login, res);
 
       const foundPerson = result.records[0].get("person").properties;
-      //TODO stestowac czy jak cos sie wytwali to jak zareaguje catch nizej
       if (await bcrypt.compare(password, foundPerson.password)) {
-        //success
+        const person = {
+          login: foundPerson.login,
+          role: foundPerson.role,
+        };
+        const accessToken = jwt.sign(person, process.env.ACCESS_TOKEN_SECRET);
+        return res.json({ accessToken: accessToken });
       } else {
         return res
           .status(401)
           .send({ message: "Password or login is incorrect" });
       }
     })
-    .catch((error) => res.status(500).send(error))
+    .catch((error) => {
+      console.log("er");
+      res.status(500).send(error);
+    })
     .then(() => session.close());
 
   const client = "clientData";

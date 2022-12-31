@@ -15,10 +15,15 @@ const {
 } = require("../utils/routesUtils");
 
 router.get("/", (req, res) => {
-  if (!isSortByValid(req.query.sortBy))
-    return handleInvalidQueryParameter(res, "sortBy", req.query.sortBy);
+  const sortBy = req.query.sortBy ? req.query.sortBy.toUpperCase() : undefined;
+  const sortOrder = req.query.sortOrder
+    ? req.query.sortOrder.toUpperCase()
+    : undefined;
 
-  if (!isSortOrderValid(req.query.sortOrder))
+  if (!isSortByValid(sortBy))
+    return handleInvalidQueryParameter(res, "sortBy", sortBy);
+
+  if (!isSortOrderValid(sortOrder))
     return handleInvalidQueryParameter(res, "sortOrder", req.query.orderBy);
 
   if (!areGenresValid(req.query.genres))
@@ -38,13 +43,13 @@ router.get("/", (req, res) => {
 
 router.get("/popular/:limit", (req, res) => {
   if (!isLimitValid(req.params.limit))
-    return res.status(400).send("Invalid limit parameter");
+    return handleInvalidQueryParameter(res, "limit", req.params.limit);
 
   const session = driver.session();
   const limit = req.params.limit;
   const query = `
     MATCH (book:Book)
-    OPTIONAL MATCH (:Client)-[r:RATED]->(book)
+    OPTIONAL MATCH (:Person)-[r:RATED]->(book)
     WITH book, count(r) as ratings
     RETURN book, COALESCE(ratings, 0) as ratings
     ORDER BY ratings DESC
@@ -65,7 +70,7 @@ router.get("/details/:uuid", (req, res) => {
   const query = `
     MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {uuid: '${uuid}'})-[:HAS_GENRE]->(g:Genre),
       (book)-[:PUBLISHED_BY]->(p:PublishingHouse)
-    OPTIONAL MATCH (book)<-[rated:RATED]-(:Client)
+    OPTIONAL MATCH (book)<-[rated:RATED]-(:Person)
     WITH book,
       collect(distinct g.name) as genres,
       collect(distinct properties(a)) as authors,

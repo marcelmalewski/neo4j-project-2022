@@ -1,10 +1,10 @@
 const Genres = [
-  "Fantasy",
-  "Romance",
-  "Fiction",
-  "Magical Realism",
-  "Adventure",
-  "Mystery",
+  "FANTASY",
+  "ROMANCE",
+  "FICTION",
+  "MAGICAL REALISM",
+  "ADVENTURE",
+  "MYSTERY",
 ];
 
 const Roles = {
@@ -12,7 +12,20 @@ const Roles = {
   LIBRARIAN: "LIBRARIAN",
 };
 
+const SortBy = {
+  TITLE: "TITLE",
+  RELEASEDATE: "RELEASEDATE",
+  AVGRATING: "AVGRATING",
+};
+
+const SortOrder = {
+  ASC: "ASC",
+  DESC: "DESC",
+};
+
 module.exports = {
   Genres,
   Roles,
+  SortBy,
+  SortOrder,
 };

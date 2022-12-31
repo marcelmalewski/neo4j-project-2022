@@ -31,7 +31,7 @@ const sendRegisterRequest = async (res, login, name, hashedPassword) => {
   const writeTxResult = txWrite(session, query);
   writeTxResult
     .then((result) => {
-      return res.status(201).json(result.records[0].get("person").properties);
+      return res.status(201).json({ message: "Registered" });
     })
     .catch((error) => {
       if (error.code === "Neo.ClientError.Schema.ConstraintValidationFailed")
