@@ -2,8 +2,8 @@ const { txWrite } = require("./neo4jSessionUtils");
 const { handleNotFound } = require("./routesUtils");
 
 handleCommentPostRequest = (req, res, query, session, uuid) => {
-  const writeTxResultPromise = txWrite(session, query);
-  writeTxResultPromise
+  const writeTxResult = txWrite(session, query);
+  writeTxResult
     .then((result) => {
       if (result.records.length === 0)
         return handleNotFound("Book", "uuid", uuid);

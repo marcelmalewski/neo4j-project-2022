@@ -1,26 +1,34 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const driver = require("../config/neo4jDriver");
-const { txWrite } = require("../utils/neo4jSessionUtils");
+const { txRead } = require("../utils/neo4jSessionUtils");
+const { authenticateToken } = require("../utils/routesUtils");
+const { sendRatingRequest } = require("../utils/ratingsUtils");
 //TODO dodac updatowanie oceny
-router.post("/", (req, res) => {
-  //TODO walidacja gdy juz stworzyl swoją ocene to error
+router.post("/", authenticateToken, (req, res) => {
   const session = driver.session();
-  const rating = req.body.rating;
-  const expiryDate =
-    req.body.expiryDate === undefined
-      ? null
-      : `datetime('${req.body.expiryDate}')`;
+  const bookUuid = req.params.uuid;
+  const personLogin = req.person.login;
   const query = `
-    MATCH (book:Book {id: '${bookId}'})
-    MATCH (client:Client {id: '${clientId}'})
-    CREATE (client)-[rated:RATED {rating: ${rating}, expiry_date: ${expiryDate}}]->(book)
-    RETURN rated`;
+    MATCH (:Book {uuid: '${bookUuid}'})<-[rated:RATED]-(:Person {login: '${personLogin}'})
+    RETURN rated
+    `;
 
-  const writeTxResultPromise = txWrite(session, query);
-  writeTxResultPromise
+  const readTxResult = txRead(session, query);
+  readTxResult
     .then((result) => {
-      res.json(result.records[0].get("rated").properties);
+      if (result.records.length > 0)
+        return res
+          .status(400)
+          .send({ message: `You already rated book with uuid: '${bookUuid}'` });
+
+      return sendRatingRequest(
+        req.body.rating,
+        req.body.expiryDate,
+        bookUuid,
+        personLogin,
+        res
+      );
     })
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());

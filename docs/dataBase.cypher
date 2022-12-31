@@ -67,11 +67,11 @@ CREATE (person2:Person {login: apoc.create.uuid(), name: "Adam Nowak", role: "CL
 CREATE (person3:Person {login: "4", name: "Krzysztof Krawczyk", role: "CLIENT", password: "1234"})
 CREATE (person4:Person {login: "5", name: "Janusz Kowalski", role: "CLIENT", password: "1234"})
 
-CREATE (person)-[:RATED {rating: 5, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(Harry)
-CREATE (person2)-[:RATED {rating: 4, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(Harry)
-CREATE (person3)-[:RATED {rating: 2, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(Harry)
-CREATE (person4)-[:RATED {rating: 9, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(b9)
-CREATE (person4)-[:RATED {rating: 2, expiry_date: datetime("2023-12-26T11:17:10.022000000Z")}]->(b10)
+CREATE (person)-[:RATED {rating: 5, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person2)-[:RATED {rating: 4, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person3)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person4)-[:RATED {rating: 9, expiry_date: date("2023-12-26")}]->(b9)
+CREATE (person4)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(b10)
 
 CREATE (person)-[:COMMENTED {comment: "Great book!", date: datetime("2022-12-26T11:17:10.022000000Z")}]->(Harry)
 CREATE (person2)-[:COMMENTED {comment: "Not bad", date: datetime("2022-12-27T11:17:10.022000000Z")}]->(Harry)

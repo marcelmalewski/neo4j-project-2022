@@ -1,11 +1,8 @@
 const jwt = require("jsonwebtoken");
 const handleNotFound = (name, withWhat, withWhatValue, res) => {
-  console.log("yes");
-  return res
-    .status(400)
-    .send({
-      message: `${name} with ${withWhat}: '${withWhatValue}' not found.`,
-    });
+  return res.status(400).send({
+    message: `${name} with ${withWhat}: '${withWhatValue}' not found.`,
+  });
 };
 
 const handleInvalidQueryParameter = (res, parameterName, parameterValue) => {

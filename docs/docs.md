@@ -65,13 +65,15 @@ http://localhost:5000/books/11/comments
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /books/:bookId/ratings
 #### zawartość body:
-* `rating` - ocena
-* `expiryDate` - kiedy ocena wygasa (opcjonalne) (default: `nie wygasa`)
+* `rating` - ocena (1-10)
+* `expiryDate` - kiedy ocena wygasa (opcjonalne, default: `nie wygasa`)
+przyjmuje tylko date tego typu: "2000-10-01" , rok nie może przekraczać roku `4000`
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/ratings
 
 ### 6. Rezerwacja książki
 * możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /books/:bookId/reservations
 to stany rezerwacji przeniesc do czesci gdzie są wszystkie encje
 #### stany rezerwacji:
