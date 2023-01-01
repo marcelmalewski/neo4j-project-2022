@@ -6,19 +6,19 @@ const { Roles } = require("./consts");
 const isLoginValid = (login) => {
   if (isParamEmpty(login)) return false;
 
-  return login.length > 3;
+  return login.length > 3 && login.length < 20;
 };
 
 const isNameValid = (name) => {
   if (isParamEmpty(name)) return false;
 
-  return name.split(" ").length === 2;
+  return name.split(" ").length === 2 && name.length < 20;
 };
 
 const isPasswordValid = (password) => {
   if (isParamEmpty(password)) return false;
 
-  return password.length > 8;
+  return password.length > 8 && password.length < 20;
 };
 
 const sendRegisterRequest = async (res, login, name, hashedPassword) => {
@@ -30,7 +30,7 @@ const sendRegisterRequest = async (res, login, name, hashedPassword) => {
 
   const writeTxResult = txWrite(session, query);
   writeTxResult
-    .then((result) => {
+    .then(() => {
       return res.status(201).json({ message: "Registered" });
     })
     .catch((error) => {

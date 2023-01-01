@@ -77,3 +77,9 @@ CREATE (person)-[:COMMENTED {comment: "Great book!", date: datetime("2022-12-26T
 CREATE (person2)-[:COMMENTED {comment: "Not bad", date: datetime("2022-12-27T11:17:10.022000000Z")}]->(Harry)
 CREATE (person3)-[:COMMENTED {comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 CREATE (notLoggedPerson)-[:COMMENTED {comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
+
+CREATE (person)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(harry)
+
+MATCH (p:Person {login: "123456"})
+MATCH (b:Book {title: "Harry Potter"})
+CREATE (p)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(b)

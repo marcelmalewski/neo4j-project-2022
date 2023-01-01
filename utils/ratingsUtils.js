@@ -1,5 +1,6 @@
 const { txRead } = require("./neo4jSessionUtils");
 const driver = require("../config/neo4jDriver");
+const { isDateValid } = require("./routesUtils");
 
 const checkIfBookIsAlreadyRated = (req, res, next) => {
   const session = driver.session();
@@ -34,19 +35,11 @@ const isRatingValid = (rating) => {
 const isExpiryDateValid = (expiryDate) => {
   if (expiryDate === undefined) return true;
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDate)) return false;
-
-  const expiryDateAsArr = expiryDate.split("-");
-  const year = parseInt(expiryDateAsArr[0]);
-  const month = parseInt(expiryDateAsArr[1]);
-  const day = parseInt(expiryDateAsArr[2]);
-
-  if (month === 0 || month > 12) return false;
-  if (day === 0 || day > 31) return false;
-  if (year > 4000) return false;
+  if (!isDateValid(expiryDate)) return false;
 
   const currentDate = new Date();
-  const expiryDateObject = new Date(year, month, day);
+  //TODO przetestowac
+  const expiryDateObject = new Date(expiryDate);
   return expiryDateObject > currentDate;
 };
 

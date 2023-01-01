@@ -162,9 +162,9 @@ W kodzie jest to nazwane jako `librarian` bardziej tematycznie
 * `description` - opis
 * `releaseDate` - data wydania
 * `imageLink` - link do zdjęcia
-* `genres` - gatunki
-* `authors` - autorzy
-* `publishingHouse` - wydawnictwo
+* `genres` - gatunki (muszą istnieć w bazie)
+* `authors` - autorzy (muszą istnieć w bazie)
+* `publishingHouse` - wydawnictwo (musi istnieć w bazie)
 #### Przykładowe zapytanie:
 http://localhost:5000/books
 
@@ -177,9 +177,9 @@ http://localhost:5000/books
 * `description` - opis
 * `releaseDate` - data wydania
 * `imageLink` - link do zdjęcia
-* `genres` - gatunki
-* `authors` - autorzy
-* `publishingHouse` - wydawnictwo
+* `genres` - gatunki (muszą istnieć w bazie)
+* `authors` - autorzy (muszą istnieć w bazie)
+* `publishingHouse` - wydawnictwo (musi istnieć w bazie)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11
 

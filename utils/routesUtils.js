@@ -18,6 +18,19 @@ const isParamEmpty = (param) => {
   return param === undefined || param.trim() === "";
 };
 
+const isDateValid = (date) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+
+  const dateAsArr = date.split("-");
+  const year = parseInt(dateAsArr[0]);
+  const month = parseInt(dateAsArr[1]);
+  const day = parseInt(dateAsArr[2]);
+
+  if (month === 0 || month > 12) return false;
+  if (day === 0 || day > 31) return false;
+  if (year > 4000) return false;
+};
+
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -57,4 +70,5 @@ module.exports = {
   handleInvalidQueryParameter,
   authenticateToken,
   checkIfBookWithGivenUuidExists,
+  isDateValid,
 };

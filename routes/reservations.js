@@ -14,11 +14,12 @@ const {
 } = require("../utils/reservationsUtils");
 const { ReservationState } = require("../utils/consts");
 //TODO dodać endpoint do każdego zmianu stanu rezerwacji
+//TODO endpoint do pobierania wszystkich rezerwacji danego użytkownika
 
 router.get("/reservations/history", authenticateToken, (req, res) => {
   const session = driver.session();
   const personLogin = req.person.login;
-  const query = `MATCH (p:Person {id: '${personLogin}'})-[reserved:RESERVED]->(:Book)
+  const query = `MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(:Book)
                 WHERE reserved.state = 'RETURNED'
                 RETURN reserved ORDER BY reserved.state_update_date DESC`;
 
