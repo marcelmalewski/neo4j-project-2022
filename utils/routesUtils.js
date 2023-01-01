@@ -1,4 +1,7 @@
 const jwt = require("jsonwebtoken");
+const driver = require("../config/neo4jDriver");
+const { txRead } = require("./neo4jSessionUtils");
+
 const handleNotFound = (name, withWhat, withWhatValue, res) => {
   return res.status(400).send({
     message: `${name} with ${withWhat}: '${withWhatValue}' not found.`,
@@ -28,9 +31,30 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+const checkIfBookWithGivenUuidExists = (req, res, next) => {
+  const session = driver.session();
+  const bookUuid = req.params.uuid;
+  const query = `
+    MATCH (book:Book {uuid: '${bookUuid}'})
+    RETURN book
+    `;
+
+  const readTxResult = txRead(session, query);
+  readTxResult
+    .then((result) => {
+      if (result.records.length === 0)
+        return handleNotFound("Book", "uuid", bookUuid, res);
+
+      next();
+    })
+    .catch((error) => res.status(500).send(error))
+    .then(() => session.close());
+};
+
 module.exports = {
   handleNotFound,
   isParamEmpty,
   handleInvalidQueryParameter,
   authenticateToken,
+  checkIfBookWithGivenUuidExists,
 };

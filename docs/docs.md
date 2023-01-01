@@ -1,4 +1,13 @@
 # Mini dokumentacja
+## Encje:
+to stany rezerwacji przeniesc do czesci gdzie są wszystkie encje
+#### stany rezerwacji:
+* `NOT CONFIRMED`
+* `CONFIRMED`
+* `WAITING`
+* `RENTED OUT`
+* `RETURNED`
+
 ## Uruchamianie serwera:
 #### 1. Przygotowanie pliku .env
 
@@ -26,7 +35,7 @@ http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&a
 ### 2. Pobierz popularne książki (najczęściej oceniane)
 #### Endpoint: GET /books/popular/:limit
 #### parametry:
-* `limit` - limit wyników (liczba większa od zera)
+* `limit` - limit wyników (liczba, ale może być też jako string np. `"5"` większa od zera)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/popular/5
 
@@ -34,7 +43,7 @@ http://localhost:5000/books/popular/5
 #### Endpoint: GET /books/details/:bookUUid
 #### zwraca:
 * tytuł
-* zdjęcie (o ile istnieje),
+* zdjęcie
 * opis 
 * data
 * gatunki
@@ -54,7 +63,7 @@ http://localhost:5000/books/details/11
 * dla niezalogowanej osoby komentarz będzie anonimowy
   POST /books/:bookId/comments/not-logged-in-person
 #### zawartość body:
-* `comment` - komentarz (nie może być pusty albo samymi spacjami)
+* `comment` - komentarz (nie może być pusty albo samymi spacjami, krótszy niż 100 znaków)
 #### Przykładowe zapytanie dla niezalogowanej osoby:
 http://localhost:5000/books/11/comments/not-logged-in-person
 #### Przykładowe zapytanie dla zalogowanej osoby:
@@ -67,28 +76,26 @@ http://localhost:5000/books/11/comments
 #### zawartość body:
 * `rating` - ocena (1-10)
 * `expiryDate` - kiedy ocena wygasa (opcjonalne, default: `nie wygasa`)
-przyjmuje tylko date tego typu: "2000-10-01" , rok nie może przekraczać roku `4000`
+przyjmuje tylko date tego typu: "2000-10-01" , rok nie może przekraczać roku `4000`,
+data musi być w przyszłości.
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/ratings
 
 ### 6. Rezerwacja książki
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
+* nie można zarezerwować dwa razy jednej książki (chodzi o uuid, konkretny egzemplarz),
+można edytować rezerwacje albo usunąć i stworzyć od nowa
 #### Endpoint: POST /books/:bookId/reservations
-to stany rezerwacji przeniesc do czesci gdzie są wszystkie encje
-#### stany rezerwacji:
-* `not confirmed`
-* `confirmed`
-* `waiting`
-* `rented out`
-* `returned`
 #### Body:
-* `rentalPeriod` - na ile dni chcemy wypożyczyć książkę
+* `rentalPeriodInDays` - na ile dni chcemy wypożyczyć książkę
+(liczba, ale może być też jako string np. `"5"`, mniejsza niż 60 i większa od 0)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations
 
 ### 7. Potwierdzenie rezerwacji
 * możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
 * można potwierdzić tylko rezerwacje o stanie `not confirmed`
 #### Endpoint: PATCH /books/:bookId/reservations/confirm
@@ -97,6 +104,7 @@ http://localhost:5000/books/11/reservations/confirm
 
 ### 8. Edycja rezerwacji
 * możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
 * możliwe tylko dla rezerwacji o stanie `not confirmed`
 #### Endpoint: PATCH /books/:bookId/reservations
@@ -106,6 +114,8 @@ http://localhost:5000/books/11/reservations/confirm
 http://localhost:5000/books/11/reservations
 
 #### 9. Usuwanie rezerwacji
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
 * możliwe tylko dla rezerwacji o stanie `not confirmed`
 * możliwe tylko dla zalogowanych użytkowników
@@ -117,6 +127,7 @@ http://localhost:5000/books/11/reservations
 Rezerwacje, które już się zakończyły, posortowane po dacie, kiedy zostały oddane (stan `returned`).
 Posortowane malejąco.
 * możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: GET /books/:bookId/reservations/history
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations/history

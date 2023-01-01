@@ -1,26 +1,24 @@
-const { txWrite } = require("./neo4jSessionUtils");
-const { handleInvalidQueryParameter } = require("./routesUtils");
+const { txRead } = require("./neo4jSessionUtils");
 const driver = require("../config/neo4jDriver");
-const sendRatingRequest = (rating, expiryDate, bookUuid, personLogin, res) => {
-  if (!isRatingValid(rating))
-    return handleInvalidQueryParameter(res, "rating", rating);
 
-  if (!isExpiryDateValid(expiryDate))
-    return handleInvalidQueryParameter(res, "expiryDate", expiryDate);
-
+const checkIfBookIsAlreadyRated = (req, res, next) => {
   const session = driver.session();
-  const parsedExpiryDate =
-    expiryDate === undefined ? null : `date('${expiryDate}')`;
+  const bookUuid = req.params.uuid;
+  const personLogin = req.person.login;
   const query = `
-    MATCH (book:Book {uuid: '${bookUuid}'})
-    MATCH (person:Person {login: '${personLogin}'})
-    CREATE (person)-[rated:RATED {rating: ${rating}, expiry_date: ${parsedExpiryDate}}]->(book)
-    RETURN rated`;
+    MATCH (:Book {uuid: '${bookUuid}'})<-[rated:RATED]-(:Person {login: '${personLogin}'})
+    RETURN rated
+    `;
 
-  const writeTxResult = txWrite(session, query);
-  writeTxResult
+  const readTxResult = txRead(session, query);
+  readTxResult
     .then((result) => {
-      res.json(result.records[0].get("rated").properties);
+      if (result.records.length > 0)
+        return res.status(400).send({
+          message: `You already rated book with uuid: '${bookUuid}'`,
+        });
+
+      next();
     })
     .catch((error) => res.status(500).send(error))
     .then(() => session.close());
@@ -28,7 +26,9 @@ const sendRatingRequest = (rating, expiryDate, bookUuid, personLogin, res) => {
 
 const isRatingValid = (rating) => {
   const num = Number(rating);
-  return rating === undefined || (Number.isInteger(num) && 10 >= num >= 1);
+  return (
+    rating === undefined || (Number.isInteger(num) && 10 >= num && num >= 1)
+  );
 };
 
 const isExpiryDateValid = (expiryDate) => {
@@ -43,9 +43,15 @@ const isExpiryDateValid = (expiryDate) => {
 
   if (month === 0 || month > 12) return false;
   if (day === 0 || day > 31) return false;
-  return year <= 4000;
+  if (year > 4000) return false;
+
+  const currentDate = new Date();
+  const expiryDateObject = new Date(year, month, day);
+  return expiryDateObject > currentDate;
 };
 
 module.exports = {
-  sendRatingRequest,
+  checkIfBookIsAlreadyRated,
+  isRatingValid,
+  isExpiryDateValid,
 };

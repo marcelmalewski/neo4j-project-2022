@@ -145,6 +145,7 @@ router.put("/:uuid", (req, res) => {
 });
 
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
+//TODO albo uzyc checkIfBookWithGivenUuidExists
 router.delete("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
   const session = driver.session();

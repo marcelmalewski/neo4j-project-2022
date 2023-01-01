@@ -1,13 +1,12 @@
 const { txWrite } = require("./neo4jSessionUtils");
-const { handleNotFound } = require("./routesUtils");
+const { handleNotFound, isParamEmpty } = require("./routesUtils");
+const driver = require("../config/neo4jDriver");
 
-handleCommentPostRequest = (req, res, query, session, uuid) => {
+const handleCommentPostRequest = (req, res, query, uuid) => {
+  const session = driver.session();
   const writeTxResult = txWrite(session, query);
   writeTxResult
     .then((result) => {
-      if (result.records.length === 0)
-        return handleNotFound("Book", "uuid", uuid);
-
       res.json(
         result.records.map((record) => record.get("comment").properties)
       );
@@ -16,6 +15,12 @@ handleCommentPostRequest = (req, res, query, session, uuid) => {
     .then(() => session.close());
 };
 
+const isCommentValid = (comment) => {
+  if (isParamEmpty(comment)) return false;
+  return comment.length < 100;
+};
+
 module.exports = {
   handleCommentPostRequest,
+  isCommentValid,
 };
