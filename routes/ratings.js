@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const driver = require("../config/neo4jDriver");
-const { txRead, txWrite } = require("../utils/neo4jSessionUtils");
+const { txWrite } = require("../utils/neo4jSessionUtils");
 const {
   authenticateToken,
   checkIfBookWithGivenUuidExists,
@@ -13,6 +13,7 @@ const {
   checkIfBookIsAlreadyRated,
 } = require("../utils/ratingsUtils");
 //TODO dodac updatowanie oceny
+
 router.post(
   "/",
   authenticateToken,

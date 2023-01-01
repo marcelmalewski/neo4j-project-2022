@@ -23,9 +23,18 @@ const SortOrder = {
   DESC: "DESC",
 };
 
+const ReservationState = {
+  NOT_CONFIRMED: "NOT CONFIRMED",
+  CONFIRMED: "CONFIRMED",
+  WAITING: "WAITING",
+  RENTED_OUT: "RENTED OUT",
+  RETURNED: "RETURNED",
+};
+
 module.exports = {
   Genres,
   Roles,
   SortBy,
   SortOrder,
+  ReservationState,
 };

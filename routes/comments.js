@@ -28,7 +28,7 @@ router.post(
     CREATE (person)-[comment:COMMENTED {comment: '${comment}', date: datetime()}]->(book)
     RETURN comment`;
 
-    handleCommentPostRequest(req, res, query, bookUuid);
+    handleCommentPostRequest(req, res, query);
   }
 );
 
@@ -47,7 +47,7 @@ router.post(
     CREATE (person)-[comment:COMMENTED {comment: '${comment}', date: datetime()}]->(book)
     RETURN comment`;
 
-    handleCommentPostRequest(req, res, query, bookUuid);
+    handleCommentPostRequest(req, res, query);
   }
 );
 

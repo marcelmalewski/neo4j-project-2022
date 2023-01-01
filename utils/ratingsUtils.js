@@ -36,10 +36,10 @@ const isExpiryDateValid = (expiryDate) => {
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDate)) return false;
 
-  const parts = expiryDate.split("-");
-  const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]);
-  const day = parseInt(parts[2]);
+  const expiryDateAsArr = expiryDate.split("-");
+  const year = parseInt(expiryDateAsArr[0]);
+  const month = parseInt(expiryDateAsArr[1]);
+  const day = parseInt(expiryDateAsArr[2]);
 
   if (month === 0 || month > 12) return false;
   if (day === 0 || day > 31) return false;

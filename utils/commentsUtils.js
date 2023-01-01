@@ -1,8 +1,8 @@
 const { txWrite } = require("./neo4jSessionUtils");
-const { handleNotFound, isParamEmpty } = require("./routesUtils");
+const { isParamEmpty } = require("./routesUtils");
 const driver = require("../config/neo4jDriver");
 
-const handleCommentPostRequest = (req, res, query, uuid) => {
+const handleCommentPostRequest = (req, res, query) => {
   const session = driver.session();
   const writeTxResult = txWrite(session, query);
   writeTxResult

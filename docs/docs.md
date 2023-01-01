@@ -97,7 +97,7 @@ http://localhost:5000/books/11/reservations
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
-* można potwierdzić tylko rezerwacje o stanie `not confirmed`
+* można potwierdzić tylko rezerwacje o stanie `NOT CONFIRMED`
 #### Endpoint: PATCH /books/:bookId/reservations/confirm
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations/confirm
@@ -106,10 +106,11 @@ http://localhost:5000/books/11/reservations/confirm
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
-* możliwe tylko dla rezerwacji o stanie `not confirmed`
+* możliwe tylko dla rezerwacji o stanie `NOT CONFIRMED`
 #### Endpoint: PATCH /books/:bookId/reservations
 #### Body:
 * `rentalPeriodInDays` - na ile dni chcemy wypożyczyć książkę
+(liczba, ale może być też jako string np. `"5"`, mniejsza niż 60 i większa od 0)
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations
 
@@ -117,8 +118,7 @@ http://localhost:5000/books/11/reservations
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
-* możliwe tylko dla rezerwacji o stanie `not confirmed`
-* możliwe tylko dla zalogowanych użytkowników
+* możliwe tylko dla rezerwacji o stanie `NOT CONFIRMED`
 #### Endpoint: DELETE /books/:bookId/reservations
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations

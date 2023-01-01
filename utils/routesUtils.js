@@ -32,13 +32,13 @@ const authenticateToken = (req, res, next) => {
 };
 
 const checkIfBookWithGivenUuidExists = (req, res, next) => {
-  const session = driver.session();
   const bookUuid = req.params.uuid;
   const query = `
     MATCH (book:Book {uuid: '${bookUuid}'})
     RETURN book
     `;
 
+  const session = driver.session();
   const readTxResult = txRead(session, query);
   readTxResult
     .then((result) => {

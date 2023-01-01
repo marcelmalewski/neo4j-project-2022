@@ -5,15 +5,21 @@ const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
 const {
   authenticateToken,
   checkIfBookWithGivenUuidExists,
+  handleInvalidQueryParameter,
 } = require("../utils/routesUtils");
-const { sendReservationRequest } = require("../utils/reservationsUtils");
+const {
+  checkIfReservationExistsAndIsNotConfirmed,
+  isRentalPeriodInDaysValid,
+  checkIfBookIsAlreadyReserved,
+} = require("../utils/reservationsUtils");
+const { ReservationState } = require("../utils/consts");
 //TODO dodać endpoint do każdego zmianu stanu rezerwacji
 
 router.get(
   "/history",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
-  async (req, res) => {
+  (req, res) => {
     const session = driver.session();
     const clientId = "5";
     const bookId = req.params.id;
@@ -35,30 +41,29 @@ router.post(
   "/",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
-  async (req, res) => {
-    const session = driver.session();
+  checkIfBookIsAlreadyReserved,
+  (req, res) => {
     const bookUuid = req.params.uuid;
     const personLogin = req.person.login;
+    const rentalPeriodInDays = req.body.rentalPeriodInDays;
+    if (!isRentalPeriodInDaysValid(rentalPeriodInDays))
+      return handleInvalidQueryParameter(
+        res,
+        "rentalPeriodInDays",
+        rentalPeriodInDays
+      );
+
+    const session = driver.session();
     const query = `
-      MATCH (:Book {uuid: '${bookUuid}'})<-[reserved:RESERVED]-(:Person {login: '${personLogin}'})
-      RETURN reserved
-      `;
+    MATCH (person:Person {login: '${personLogin}'})
+    MATCH (book:Book {uuid: '${bookUuid}'})
+    CREATE (person)-[reserved:RESERVED {rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
+    RETURN reserved`;
 
-    console.log(query);
-    const readTxResult = txRead(session, query);
-    readTxResult
+    const writeTxResultPromise = txWrite(session, query);
+    writeTxResultPromise
       .then((result) => {
-        if (result.records.length > 0)
-          return res.status(400).send({
-            message: `You already reserved book with uuid: '${bookUuid}'`,
-          });
-
-        return sendReservationRequest(
-          bookUuid,
-          personLogin,
-          req.body.rentalPeriodInDays,
-          res
-        );
+        res.json(result.records[0].get("reserved").properties);
       })
       .catch((error) => res.status(500).send(error))
       .then(() => session.close());
@@ -69,22 +74,29 @@ router.patch(
   "/",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
-  async (req, res) => {
-    //TODO dodac sprawdzenie czy rezerwacja istnieje i czy miala stan not confirmed bo tylko wtedy mozna ją edytowac
-    const session = driver.session();
-    const clientId = "5";
-    const bookId = req.params.id;
-    //TODO walidacja czy rentalPeriod zostal podany i czy nie przekracza 60 dni
+  checkIfReservationExistsAndIsNotConfirmed,
+  (req, res) => {
+    const personLogin = req.person.login;
+    const bookUuid = req.params.uuid;
     const rentalPeriodInDays = req.body.rentalPeriodInDays;
+
+    if (!isRentalPeriodInDaysValid(rentalPeriodInDays))
+      return handleInvalidQueryParameter(
+        res,
+        "rentalPeriodInDays",
+        rentalPeriodInDays
+      );
+
+    const session = driver.session();
     const query = `
-    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-    SET r.rental_period_in_days = ${rentalPeriodInDays}
-    RETURN r`;
+      MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+      SET reserved.rental_period_in_days = ${rentalPeriodInDays}
+      RETURN reserved`;
 
     const writeTxResultPromise = txWrite(session, query);
     writeTxResultPromise
       .then((result) => {
-        res.json(result.records[0].get("r").properties);
+        res.json(result.records[0].get("reserved").properties);
       })
       .catch((error) => res.status(500).send(error))
       .then(() => session.close());
@@ -95,38 +107,38 @@ router.patch(
   "/confirm",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
-  async (req, res) => {
+  checkIfReservationExistsAndIsNotConfirmed,
+  (req, res) => {
     const session = driver.session();
-    const clientId = "5";
-    const bookId = req.params.id;
+    const personLogin = req.person.login;
+    const bookUuid = req.params.uuid;
     const query = `
-    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-    SET r.state = 'CONFIRMED', r.state_update_date = date()
-    RETURN r`;
+    MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+    SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
+    RETURN reserved`;
 
     const writeTxResultPromise = txWrite(session, query);
     writeTxResultPromise
       .then((result) => {
-        res.json(result.records[0].get("r").properties);
+        res.json(result.records[0].get("reserved").properties);
       })
       .catch((error) => res.status(500).send(error))
       .then(() => session.close());
   }
 );
 
-//TODO przetestowac dziala i dodac do doksow
 router.delete(
   "/",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
-  async (req, res) => {
-    //TODO dodac sprawdzenie czy rezerwacja istnieje i czy miala stan not confirmed bo tylko wtedy mozna ją usunąć
+  checkIfReservationExistsAndIsNotConfirmed,
+  (req, res) => {
     const session = driver.session();
-    const clientId = "5";
-    const bookId = req.params.id;
+    const personLogin = req.person.login;
+    const bookUuid = req.params.uuid;
     const query = `
-    MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-    DELETE r`;
+      MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+      DELETE reserved`;
 
     const writeTxResultPromise = txWrite(session, query);
     writeTxResultPromise
