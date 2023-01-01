@@ -15,30 +15,24 @@ const {
 const { ReservationState } = require("../utils/consts");
 //TODO dodać endpoint do każdego zmianu stanu rezerwacji
 
-router.get(
-  "/history",
-  authenticateToken,
-  checkIfBookWithGivenUuidExists,
-  (req, res) => {
-    const session = driver.session();
-    const clientId = "5";
-    const bookId = req.params.id;
-    const query = `MATCH (c:Client {id: '${clientId}'})-[r:RESERVED]->(b:Book {id: '${bookId}'})
-                WHERE r.state = 'RETURNED'
-                RETURN r ORDER BY r.state_update_date DESC`;
+router.get("/reservations/history", authenticateToken, (req, res) => {
+  const session = driver.session();
+  const personLogin = req.person.login;
+  const query = `MATCH (p:Person {id: '${personLogin}'})-[reserved:RESERVED]->(:Book)
+                WHERE reserved.state = 'RETURNED'
+                RETURN reserved ORDER BY reserved.state_update_date DESC`;
 
-    const readTxResultPromise = txRead(session, query);
-    readTxResultPromise
-      .then((result) => {
-        res.json(result.records[0].get("r").properties);
-      })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
-  }
-);
+  const readTxResult = txRead(session, query);
+  readTxResult
+    .then((result) => {
+      res.json(result.records[0].get("reserved").properties);
+    })
+    .catch((error) => res.status(500).send(error))
+    .then(() => session.close());
+});
 
 router.post(
-  "/",
+  "/:uuid/reservations",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   checkIfBookIsAlreadyReserved,
@@ -60,8 +54,8 @@ router.post(
     CREATE (person)-[reserved:RESERVED {rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
     RETURN reserved`;
 
-    const writeTxResultPromise = txWrite(session, query);
-    writeTxResultPromise
+    const writeTxResult = txWrite(session, query);
+    writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
@@ -71,7 +65,7 @@ router.post(
 );
 
 router.patch(
-  "/",
+  "/:uuid/reservations",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   checkIfReservationExistsAndIsNotConfirmed,
@@ -93,8 +87,8 @@ router.patch(
       SET reserved.rental_period_in_days = ${rentalPeriodInDays}
       RETURN reserved`;
 
-    const writeTxResultPromise = txWrite(session, query);
-    writeTxResultPromise
+    const writeTxResult = txWrite(session, query);
+    writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
@@ -104,7 +98,7 @@ router.patch(
 );
 
 router.patch(
-  "/confirm",
+  "/:uuid/reservations/confirm",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   checkIfReservationExistsAndIsNotConfirmed,
@@ -117,8 +111,8 @@ router.patch(
     SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    const writeTxResultPromise = txWrite(session, query);
-    writeTxResultPromise
+    const writeTxResult = txWrite(session, query);
+    writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
@@ -128,7 +122,7 @@ router.patch(
 );
 
 router.delete(
-  "/",
+  "/:uuid/reservations",
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   checkIfReservationExistsAndIsNotConfirmed,
@@ -140,8 +134,8 @@ router.delete(
       MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
       DELETE reserved`;
 
-    const writeTxResultPromise = txWrite(session, query);
-    writeTxResultPromise
+    const writeTxResult = txWrite(session, query);
+    writeTxResult
       .then(() => {
         res.json("Reservation deleted");
       })

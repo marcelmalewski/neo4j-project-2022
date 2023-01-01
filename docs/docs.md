@@ -124,7 +124,7 @@ http://localhost:5000/books/11/reservations
 http://localhost:5000/books/11/reservations
 
 ### 10. Pobranie historii rezerwacji
-Rezerwacje, które już się zakończyły, posortowane po dacie, kiedy zostały oddane (stan `returned`).
+Rezerwacje, które już się zakończyły, posortowane po dacie, kiedy zostały oddane (stan `RETURNED`).
 Posortowane malejąco.
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
@@ -135,9 +135,9 @@ http://localhost:5000/books/11/reservations/history
 ### 11. Rejestracja
 #### Endpoint: POST /register
 #### Body:
-* login (unikalny, długość > 3)
-* name (imie + spacje + nazwisko, np. "Jan Kowalski")
-* password (długość > 8)
+* login (unikalny, 20 > długość > 3)
+* name (imie + spacje + nazwisko, np. "Jan Kowalski", 20 > długość)
+* password (20 > długość > 8)
 #### Przykładowe zapytanie:
 http://localhost:5000/register
 

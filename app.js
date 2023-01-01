@@ -36,7 +36,7 @@ try {
   app.use("/books", books);
   app.use("/books/:uuid/comments", comments);
   app.use("/books/:uuid/ratings", ratings);
-  app.use("/books/:uuid/reservations", reservations);
+  app.use("/books", reservations);
   app.use("", auth);
 
   console.log(`Connected to Neo4J.`);
