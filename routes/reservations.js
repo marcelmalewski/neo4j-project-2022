@@ -6,6 +6,7 @@ const {
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   handleInvalidQueryParameter,
+  handleNotFound,
 } = require("../utils/routesUtils");
 const {
   checkIfReservationExistsAndIsNotConfirmed,
@@ -35,7 +36,6 @@ router.get("/reservations/history", authenticateToken, (req, res) => {
 router.post(
   "/:uuid/reservations",
   authenticateToken,
-  checkIfBookWithGivenUuidExists,
   checkIfBookIsAlreadyReserved,
   (req, res) => {
     const bookUuid = req.params.uuid;
@@ -57,6 +57,9 @@ router.post(
     const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
+        if (result.records.length === 0)
+          return handleNotFound("Book", "uuid", bookUuid, res);
+
         res.json(result.records[0].get("reserved").properties);
       })
       .catch((error) => res.status(500).send(error));

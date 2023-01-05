@@ -1,7 +1,11 @@
 const { txWrite } = require("./neo4jSessionUtils");
-const { isParamEmpty, handleInvalidQueryParameter } = require("./routesUtils");
+const {
+  isParamEmpty,
+  handleInvalidQueryParameter,
+  handleNotFound,
+} = require("./routesUtils");
 
-const handleCommentPostRequest = (req, res, query) => {
+const handleCommentPostRequest = (req, res, query, bookUuid) => {
   const comment = req.body.comment;
   if (isCommentValid(comment))
     return handleInvalidQueryParameter(res, "comment", comment);
@@ -9,6 +13,9 @@ const handleCommentPostRequest = (req, res, query) => {
   const writeTxResult = txWrite(query);
   writeTxResult
     .then((result) => {
+      if (result.records.length === 0)
+        return handleNotFound("Book", "uuid", bookUuid, res);
+
       res.json(
         result.records.map((record) => record.get("comment").properties)
       );

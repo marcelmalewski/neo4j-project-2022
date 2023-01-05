@@ -106,6 +106,7 @@ router.get("/details/:uuid", (req, res) => {
 });
 
 //TODO brak rezultatu rowna sie 400
+//TODO przeniesc do librarian
 router.put("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
   const title = req.body.title;
