@@ -1,4 +1,4 @@
-const { Genres, SortBy, SortOrder } = require("./consts");
+const { Genres, SortBy, SortOrder } = require("../consts/consts");
 
 generateGetBooksQuery = (req) => {
   const { title, authors, genres, sortBy, sortOrder } = req.query;

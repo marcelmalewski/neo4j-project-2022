@@ -12,7 +12,7 @@ const {
   isRentalPeriodInDaysValid,
   checkIfBookIsAlreadyReserved,
 } = require("../utils/reservationsUtils");
-const { ReservationState } = require("../utils/consts");
+const { ReservationState } = require("../consts/consts");
 //TODO dodać endpoint do każdego zmianu stanu rezerwacji
 //TODO endpoint do pobierania wszystkich rezerwacji danego użytkownika
 
@@ -54,14 +54,12 @@ router.post(
     CREATE (person)-[reserved:RESERVED {rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
     RETURN reserved`;
 
-    const session = driver.session();
-    const writeTxResult = txWrite(session, query);
+    const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
+      .catch((error) => res.status(500).send(error));
   }
 );
 
@@ -87,15 +85,12 @@ router.patch(
       SET reserved.rental_period_in_days = ${rentalPeriodInDays}
       RETURN reserved`;
 
-    //TODO powtorzenie
-    const session = driver.session();
-    const writeTxResult = txWrite(session, query);
+    const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
+      .catch((error) => res.status(500).send(error));
   }
 );
 
@@ -112,14 +107,12 @@ router.patch(
     SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    const session = driver.session();
-    const writeTxResult = txWrite(session, query);
+    const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
+      .catch((error) => res.status(500).send(error));
   }
 );
 
@@ -135,14 +128,12 @@ router.delete(
       MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
       DELETE reserved`;
 
-    const session = driver.session();
-    const writeTxResult = txWrite(session, query);
+    const writeTxResult = txWrite(query);
     writeTxResult
       .then(() => {
         res.json("Reservation deleted");
       })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
+      .catch((error) => res.status(500).send(error));
   }
 );
 

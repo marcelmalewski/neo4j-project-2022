@@ -1,7 +1,6 @@
 const { isParamEmpty } = require("./routesUtils");
-const driver = require("../config/neo4jDriver");
 const { txWrite } = require("./neo4jSessionUtils");
-const { Roles } = require("./consts");
+const { Roles } = require("../consts/consts");
 
 const isLoginValid = (login) => {
   if (isParamEmpty(login)) return false;
@@ -22,13 +21,12 @@ const isPasswordValid = (password) => {
 };
 
 const sendRegisterRequest = async (res, login, name, hashedPassword) => {
-  const session = driver.session();
   const query = `
     CREATE (person:Person {login: '${login}', name: '${name}', role: '${Roles.CLIENT}', password: '${hashedPassword}'})
     RETURN person
     `;
 
-  const writeTxResult = txWrite(session, query);
+  const writeTxResult = txWrite(query);
   writeTxResult
     .then(() => {
       return res.status(201).json({ message: "Registered" });
@@ -38,8 +36,7 @@ const sendRegisterRequest = async (res, login, name, hashedPassword) => {
         return res.status(400).send({ message: "Login is already used." });
 
       res.status(500).send(error);
-    })
-    .then(() => session.close());
+    });
 };
 
 module.exports = {

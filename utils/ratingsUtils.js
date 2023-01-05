@@ -1,9 +1,7 @@
 const { txRead } = require("./neo4jSessionUtils");
-const driver = require("../config/neo4jDriver");
 const { isDateValid } = require("./routesUtils");
 
 const checkIfBookIsAlreadyRated = (req, res, next) => {
-  const session = driver.session();
   const bookUuid = req.params.uuid;
   const personLogin = req.person.login;
   const query = `
@@ -11,7 +9,7 @@ const checkIfBookIsAlreadyRated = (req, res, next) => {
     RETURN rated
     `;
 
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       if (result.records.length > 0)
@@ -21,8 +19,7 @@ const checkIfBookIsAlreadyRated = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 const isRatingValid = (rating) => {

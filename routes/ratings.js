@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../config/neo4jDriver");
 const { txWrite } = require("../utils/neo4jSessionUtils");
 const {
   authenticateToken,
@@ -38,14 +37,12 @@ router.post(
     CREATE (person)-[rated:RATED {rating: ${rating}, expiry_date: ${parsedExpiryDate}}]->(book)
     RETURN rated`;
 
-    const session = driver.session();
-    const writeTxResult = txWrite(session, query);
+    const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
         res.json(result.records[0].get("rated").properties);
       })
-      .catch((error) => res.status(500).send(error))
-      .then(() => session.close());
+      .catch((error) => res.status(500).send(error));
   }
 );
 

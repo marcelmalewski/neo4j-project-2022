@@ -1,6 +1,5 @@
 const { isParamEmpty, handleInvalidQueryParameter } = require("./routesUtils");
 const { txRead } = require("./neo4jSessionUtils");
-const driver = require("../config/neo4jDriver");
 
 const checkIfAuthorsAreValid = (req, res, next) => {
   const { authors } = req.body;
@@ -9,9 +8,8 @@ const checkIfAuthorsAreValid = (req, res, next) => {
   if (numberOfAuthors === 0)
     return handleInvalidQueryParameter(res, "authors", authors);
 
-  const session = driver.session();
   const query = "MATCH (a:Author) WHERE a.name IN $authors RETURN a";
-  const readTxResult = txRead(session, query, { authors });
+  const readTxResult = txRead(query, { authors });
   readTxResult
     .then((result) => {
       if (result.records.length !== numberOfAuthors)
@@ -19,8 +17,7 @@ const checkIfAuthorsAreValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 const checkIfPublishingHouseIsValid = (req, res, next) => {
@@ -29,10 +26,8 @@ const checkIfPublishingHouseIsValid = (req, res, next) => {
   if (isParamEmpty(publishingHouse))
     return handleInvalidQueryParameter(res, "publishingHouse", publishingHouse);
 
-  const session = driver.session();
   const query = `MATCH (ph:PublishingHouse) WHERE ph.name = ${publishingHouse} RETURN ph`;
-
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       if (result.records.length === 0)
@@ -44,8 +39,7 @@ const checkIfPublishingHouseIsValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 module.exports = {

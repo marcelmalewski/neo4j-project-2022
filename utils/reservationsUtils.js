@@ -1,18 +1,16 @@
 const { handleNotFound } = require("./routesUtils");
-const driver = require("../config/neo4jDriver");
 const { txRead } = require("./neo4jSessionUtils");
-const { ReservationState } = require("./consts");
+const { ReservationState } = require("../consts/consts");
 
 const checkIfReservationExistsAndIsNotConfirmed = (req, res, next) => {
   const personLogin = req.person.login;
   const bookUuid = req.params.uuid;
+
   const query = `
     MATCH (:Book {uuid: '${bookUuid}'})<-[reserved:RESERVED]-(:Person {login: '${personLogin}'})
     RETURN reserved
     `;
-
-  const session = driver.session();
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       if (result.records.length === 0)
@@ -30,20 +28,18 @@ const checkIfReservationExistsAndIsNotConfirmed = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 const checkIfBookIsAlreadyReserved = (req, res, next) => {
   const bookUuid = req.params.uuid;
   const personLogin = req.person.login;
+
   const query = `
     MATCH (:Book {uuid: '${bookUuid}'})<-[reserved:RESERVED]-(:Person {login: '${personLogin}'})
     RETURN reserved
     `;
-
-  const session = driver.session();
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       if (result.records.length > 0)
@@ -53,8 +49,7 @@ const checkIfBookIsAlreadyReserved = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 const handleWrongState = (correctState, currentState, uuid, res) => {

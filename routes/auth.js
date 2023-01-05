@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../config/neo4jDriver");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { txRead } = require("../utils/neo4jSessionUtils");
@@ -36,11 +35,10 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  const session = driver.session();
   const { login, password } = req.body;
   const query = `MATCH (person:Person {login: '${login}'}) RETURN person`;
 
-  const writeTxResult = txRead(session, query);
+  const writeTxResult = txRead(query);
   writeTxResult
     .then(async (result) => {
       if (result.records.length === 0)
@@ -61,12 +59,8 @@ router.post("/login", (req, res) => {
       }
     })
     .catch((error) => {
-      console.log("er");
       res.status(500).send(error);
-    })
-    .then(() => session.close());
-
-  const client = "clientData";
+    });
 });
 
 module.exports = router;

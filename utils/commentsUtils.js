@@ -1,22 +1,19 @@
 const { txWrite } = require("./neo4jSessionUtils");
 const { isParamEmpty, handleInvalidQueryParameter } = require("./routesUtils");
-const driver = require("../config/neo4jDriver");
 
 const handleCommentPostRequest = (req, res, query) => {
   const comment = req.body.comment;
-  if (isParamEmpty(comment))
+  if (isCommentValid(comment))
     return handleInvalidQueryParameter(res, "comment", comment);
 
-  const session = driver.session();
-  const writeTxResult = txWrite(session, query);
+  const writeTxResult = txWrite(query);
   writeTxResult
     .then((result) => {
       res.json(
         result.records.map((record) => record.get("comment").properties)
       );
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 };
 
 const isCommentValid = (comment) => {
@@ -26,5 +23,4 @@ const isCommentValid = (comment) => {
 
 module.exports = {
   handleCommentPostRequest,
-  isCommentValid,
 };

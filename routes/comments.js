@@ -1,13 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const {
-  handleCommentPostRequest,
-  isCommentValid,
-} = require("../utils/commentsUtils");
+const { handleCommentPostRequest } = require("../utils/commentsUtils");
 const {
   authenticateToken,
-  isParamEmpty,
-  handleInvalidQueryParameter,
   checkIfBookWithGivenUuidExists,
 } = require("../utils/routesUtils");
 
