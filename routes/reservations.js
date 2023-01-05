@@ -17,12 +17,12 @@ const { ReservationState } = require("../utils/consts");
 //TODO endpoint do pobierania wszystkich rezerwacji danego użytkownika
 
 router.get("/reservations/history", authenticateToken, (req, res) => {
-  const session = driver.session();
   const personLogin = req.person.login;
   const query = `MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(:Book)
                 WHERE reserved.state = 'RETURNED'
                 RETURN reserved ORDER BY reserved.state_update_date DESC`;
 
+  const session = driver.session();
   const readTxResult = txRead(session, query);
   readTxResult
     .then((result) => {
@@ -48,13 +48,13 @@ router.post(
         rentalPeriodInDays
       );
 
-    const session = driver.session();
     const query = `
     MATCH (person:Person {login: '${personLogin}'})
     MATCH (book:Book {uuid: '${bookUuid}'})
     CREATE (person)-[reserved:RESERVED {rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
     RETURN reserved`;
 
+    const session = driver.session();
     const writeTxResult = txWrite(session, query);
     writeTxResult
       .then((result) => {
@@ -82,12 +82,13 @@ router.patch(
         rentalPeriodInDays
       );
 
-    const session = driver.session();
     const query = `
       MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
       SET reserved.rental_period_in_days = ${rentalPeriodInDays}
       RETURN reserved`;
 
+    //TODO powtorzenie
+    const session = driver.session();
     const writeTxResult = txWrite(session, query);
     writeTxResult
       .then((result) => {
@@ -104,7 +105,6 @@ router.patch(
   checkIfBookWithGivenUuidExists,
   checkIfReservationExistsAndIsNotConfirmed,
   (req, res) => {
-    const session = driver.session();
     const personLogin = req.person.login;
     const bookUuid = req.params.uuid;
     const query = `
@@ -112,6 +112,7 @@ router.patch(
     SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
     RETURN reserved`;
 
+    const session = driver.session();
     const writeTxResult = txWrite(session, query);
     writeTxResult
       .then((result) => {
@@ -128,13 +129,13 @@ router.delete(
   checkIfBookWithGivenUuidExists,
   checkIfReservationExistsAndIsNotConfirmed,
   (req, res) => {
-    const session = driver.session();
     const personLogin = req.person.login;
     const bookUuid = req.params.uuid;
     const query = `
       MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
       DELETE reserved`;
 
+    const session = driver.session();
     const writeTxResult = txWrite(session, query);
     writeTxResult
       .then(() => {

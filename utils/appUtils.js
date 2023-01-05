@@ -1,5 +1,6 @@
 const driver = require("../config/neo4jDriver");
 
+//TDOD czy cos jeszcze musi byc uikalne, imie i nazwisko autora moze sie powtarzac tak samo clienta i tytul ksiazki hmm
 const createConstraints = async () => {
   const session = driver.session();
   try {

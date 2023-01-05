@@ -11,6 +11,7 @@ const { createConstraints } = require("./utils/appUtils");
 
 app.use(express.json());
 
+//TODO Przerobic na scrypt ktory trzeba odpalic przed uruchomieniem aplikacji
 //TODO dodac to do jakiejs instrukcji
 //Przy pierwszym uruchomieniu aplikacji odkomentować poniższą wersja startu serwera
 // i zakomentować tą niżej, ponieważ w darmowej wersji neo4j nie można można dodać

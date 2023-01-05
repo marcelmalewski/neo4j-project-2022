@@ -24,28 +24,24 @@ router.get("/", (req, res) => {
     return handleInvalidQueryParameter(res, "sortBy", sortBy);
 
   if (!isSortOrderValid(sortOrder))
-    return handleInvalidQueryParameter(res, "sortOrder", req.query.orderBy);
+    return handleInvalidQueryParameter(res, "sortOrder", sortOrder);
 
   if (!areGenresValid(req.query.genres))
     return handleInvalidQueryParameter(res, "genres", req.query.genres);
 
-  const session = driver.session();
   const query = generateGetBooksQuery(req);
-
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 });
 
 router.get("/popular/:limit", (req, res) => {
   if (!isLimitValid(req.params.limit))
     return handleInvalidQueryParameter(res, "limit", req.params.limit);
 
-  const session = driver.session();
   const limit = req.params.limit;
   const query = `
     MATCH (book:Book)
@@ -55,17 +51,15 @@ router.get("/popular/:limit", (req, res) => {
     ORDER BY ratings DESC
     LIMIT ${limit}`;
 
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 });
 
 router.get("/details/:uuid", (req, res) => {
-  const session = driver.session();
   const uuid = req.params.uuid;
   const query = `
     MATCH (a:Author)<-[:WRITTEN_BY]-(book:Book {uuid: '${uuid}'})-[:HAS_GENRE]->(g:Genre),
@@ -88,7 +82,7 @@ router.get("/details/:uuid", (req, res) => {
       number_of_ratings,
       average_rating`;
 
-  const readTxResult = txRead(session, query);
+  const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
       if (result.records.length === 0)
@@ -109,8 +103,7 @@ router.get("/details/:uuid", (req, res) => {
       };
       res.json(bookDetails);
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 });
 
 //TODO brak rezultatu rowna sie 400
@@ -121,46 +114,31 @@ router.put("/:uuid", (req, res) => {
   const releaseDate = req.body.releaseDate;
   const imageLink = req.body.imageLink;
 
-  const session = driver.session();
-  const readTxResult = txWrite(
-    session,
-    "MATCH (book:Book {uuid: $uuid}) " +
-      "SET book.title = $title, book.description = $description, book.releaseDate = $releaseDate, book.imageLink = $imageLink " +
-      "RETURN book",
-    {
-      uuid,
-      title,
-      description,
-      releaseDate,
-      imageLink,
-    }
-  );
-
+  const query = `
+    MATCH (book:Book {uuid: '${uuid}'})
+    SET book.title = '${title}', book.description = '${description}', book.release_date = date('${releaseDate}'), book.image_link = '${imageLink}' 
+    RETURN book`;
+  const readTxResult = txWrite(query);
   readTxResult
     .then((result) => {
       res.json(result.records[0].get("book").properties);
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 });
 
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
 //TODO albo uzyc checkIfBookWithGivenUuidExists
 router.delete("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
-  const session = driver.session();
-  const writeTxResult = txWrite(
-    session,
-    "MATCH (book:Book {uuid: $uuid}) DETACH DELETE book",
-    { uuid }
-  );
-
+  const query = `
+    MATCH (book:Book {uuid: '${uuid}'})
+    DETACH DELETE book`;
+  const writeTxResult = txWrite(query);
   writeTxResult
     .then(() => {
       res.json({ message: "Deleted book with uuid: " + uuid });
     })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+    .catch((error) => res.status(500).send(error));
 });
 
 module.exports = router;

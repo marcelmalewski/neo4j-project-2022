@@ -1,25 +1,54 @@
-const { isParamEmpty } = require("./routesUtils");
+const { isParamEmpty, handleInvalidQueryParameter } = require("./routesUtils");
+const { txRead } = require("./neo4jSessionUtils");
+const driver = require("../config/neo4jDriver");
 
-const areAuthorsValid = async (authors, res) => {
-  return res.status(500).send();
-  // if (isParamEmpty(authors)) return false;
-  //
-  // try {
-  //   // Use the 'IN' operator to check if every author is in the database
-  //   const result = await session.executeRead(
-  //     `MATCH (a:Author) WHERE a.name IN $authors RETURN COUNT(a)`,
-  //     { authors: authors }
-  //   );
-  //
-  //   const count = result.records[0].get(0).low;
-  //   return count === authors.length;
-  // } catch (error) {
-  //   // Log the error and return false
-  //   console.error(error);
-  //   return false;
-  // }
+const checkIfAuthorsAreValid = (req, res, next) => {
+  const { authors } = req.body;
+  const numberOfAuthors = authors.length;
+
+  if (numberOfAuthors === 0)
+    return handleInvalidQueryParameter(res, "authors", authors);
+
+  const session = driver.session();
+  const query = "MATCH (a:Author) WHERE a.name IN $authors RETURN a";
+  const readTxResult = txRead(session, query, { authors });
+  readTxResult
+    .then((result) => {
+      if (result.records.length !== numberOfAuthors)
+        return handleInvalidQueryParameter(res, "authors", authors);
+
+      next();
+    })
+    .catch((error) => res.status(500).send(error))
+    .then(() => session.close());
+};
+
+const checkIfPublishingHouseIsValid = (req, res, next) => {
+  const { publishingHouse } = req.body;
+
+  if (isParamEmpty(publishingHouse))
+    return handleInvalidQueryParameter(res, "publishingHouse", publishingHouse);
+
+  const session = driver.session();
+  const query = `MATCH (ph:PublishingHouse) WHERE ph.name = ${publishingHouse} RETURN ph`;
+
+  const readTxResult = txRead(session, query);
+  readTxResult
+    .then((result) => {
+      if (result.records.length === 0)
+        return handleInvalidQueryParameter(
+          res,
+          "publishingHouse",
+          publishingHouse
+        );
+
+      next();
+    })
+    .catch((error) => res.status(500).send(error))
+    .then(() => session.close());
 };
 
 module.exports = {
-  areAuthorsValid,
+  checkIfAuthorsAreValid,
+  checkIfPublishingHouseIsValid,
 };

@@ -17,9 +17,6 @@ router.post(
   checkIfBookWithGivenUuidExists,
   (req, res) => {
     const comment = req.body.comment;
-    if (!isCommentValid(comment))
-      return handleInvalidQueryParameter(res, "comment", comment);
-
     const clientLogin = req.person.login;
     const bookUuid = req.params.uuid;
     const query = `
@@ -37,9 +34,6 @@ router.post(
   checkIfBookWithGivenUuidExists,
   (req, res) => {
     const comment = req.body.comment;
-    if (isParamEmpty(comment))
-      return handleInvalidQueryParameter(res, "comment", comment);
-
     const bookUuid = req.params.uuid;
     const query = `
     MATCH (book:Book {uuid: '${bookUuid}'})

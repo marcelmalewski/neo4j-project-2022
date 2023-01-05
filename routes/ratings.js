@@ -28,7 +28,6 @@ router.post(
     if (!isExpiryDateValid(expiryDate))
       return handleInvalidQueryParameter(res, "expiryDate", expiryDate);
 
-    const session = driver.session();
     const bookUuid = req.params.uuid;
     const personLogin = req.person.login;
     const parsedExpiryDate =
@@ -39,6 +38,7 @@ router.post(
     CREATE (person)-[rated:RATED {rating: ${rating}, expiry_date: ${parsedExpiryDate}}]->(book)
     RETURN rated`;
 
+    const session = driver.session();
     const writeTxResult = txWrite(session, query);
     writeTxResult
       .then((result) => {

@@ -10,24 +10,23 @@ const {
   isDateValid,
 } = require("../utils/routesUtils");
 const { areGenresValid } = require("../utils/booksUtils");
-const { areAuthorsValid } = require("../utils/librarianUtils");
+const {
+  checkIfAuthorsAreValid,
+  checkIfPublishingHouseIsValid,
+} = require("../utils/librarianUtils");
 
 // * `title` - tytuł
 // * `description` - opis
 // * `releaseDate` - data wydania
 // * `imageLink` - link do zdjęcia
 // * `genres` - gatunki
-router.post("/books", async (req, res) => {
-  const session = driver.session();
-  const {
-    title,
-    description,
-    releaseDate,
-    imageLink,
-    genres,
-    authors,
-    publishingHouse,
-  } = req.body;
+//TODO dodac weryfikacja logowania
+//TODO stestowac checkIfAuthorsAreValid
+// //TODO stestowac checkIfPublishingHouseIsValid
+// ,
+//   checkIfPublishingHouseIsValid,
+router.post("/books", checkIfAuthorsAreValid, (req, res) => {
+  const { title, description, releaseDate, imageLink, genres } = req.body;
 
   if (isParamEmpty(title))
     return handleInvalidQueryParameter(res, "title", title);
@@ -41,34 +40,29 @@ router.post("/books", async (req, res) => {
   if (imageLink === undefined)
     return handleInvalidQueryParameter(res, "imageLink", imageLink);
 
-  if (genres !== undefined && !areGenresValid(genres))
+  if (genres === undefined || !areGenresValid(genres))
     return handleInvalidQueryParameter(res, "genres", genres);
 
-  // if (await areAuthorsValid(authors, res))
-  //   return handleInvalidQueryParameter(res, "authors", authors);
+  res.status(201).send("yes");
+
+  // const query = `
+  //     MATCH (publishingHouse:PublishingHouse {name: '${publishingHouse}'})
+  //     CREATE (book:Book {uuid: apoc.create.uuid(), title: '${title}', description: '${description}', release_date: '${releaseDate}', image_link: '${imageLink}'})
+  //     CREATE (book)-[:PUBLISHED_BY]->(publishingHouse)
+  //     RETURN book`;
   //
-  // console.log("yes");
-  if (isParamEmpty(publishingHouse))
-    return handleInvalidQueryParameter(res, "publishingHouse", publishingHouse);
-
-  const query = `
-      MATCH (publishingHouse:PublishingHouse {name: '${publishingHouse}'})
-      CREATE (book:Book {uuid: apoc.create.uuid(), title: '${title}', description: '${description}', release_date: '${releaseDate}', image_link: '${imageLink}'})
-      CREATE (book)-[:PUBLISHED_BY]->(publishingHouse)
-      RETURN book`;
-
-  const readTxResultPromise = txWrite(session, query);
-
-  readTxResultPromise
-    .then((result) => {
-      res.status(201).send(result.records[0].get("book").properties);
-    })
-    .catch((error) => res.status(500).send(error))
-    .then(() => session.close());
+  // const readTxResultPromise = txWrite(session, query);
+  //
+  // const session = driver.session();
+  // readTxResultPromise
+  //   .then((result) => {
+  //     res.status(201).send(result.records[0].get("book").properties);
+  //   })
+  //   .catch((error) => res.status(500).send(error))
+  //   .then(() => session.close());
 });
 
 router.put("/books/:id", async (req, res) => {
-  const session = driver.session();
   const id = req.params.id;
   const {
     title,
@@ -87,6 +81,7 @@ router.put("/books/:id", async (req, res) => {
       SET book.title = '${title}', book.description = '${description}', book.release_date = '${releaseDate}', book.image_link = '${imageLink}'
       RETURN book`;
 
+  const session = driver.session();
   const readTxResultPromise = txWrite(session, query);
   readTxResultPromise
     .then((result) => {
@@ -97,13 +92,14 @@ router.put("/books/:id", async (req, res) => {
 });
 
 router.delete("/books/:id", async (req, res) => {
-  const session = driver.session();
   const id = req.params.id;
   const query = `
       MATCH (book:Book {id: '${id}'})
       DETACH DELETE book
       RETURN book`;
 
+  //TODO powtorzenie
+  const session = driver.session();
   const readTxResultPromise = txWrite(session, query);
   readTxResultPromise
     .then((result) => {

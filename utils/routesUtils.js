@@ -28,7 +28,7 @@ const isDateValid = (date) => {
 
   if (month === 0 || month > 12) return false;
   if (day === 0 || day > 31) return false;
-  if (year > 4000) return false;
+  return year <= 4000;
 };
 
 const authenticateToken = (req, res, next) => {
