@@ -18,6 +18,7 @@ router.get("/", (req, res) => {
   const sortOrder = req.query.sortOrder
     ? req.query.sortOrder.toUpperCase()
     : undefined;
+  const genres = req.query.genres;
 
   if (!isSortByValid(sortBy))
     return handleInvalidQueryParameter(res, "sortBy", sortBy);
@@ -25,8 +26,8 @@ router.get("/", (req, res) => {
   if (!isSortOrderValid(sortOrder))
     return handleInvalidQueryParameter(res, "sortOrder", sortOrder);
 
-  if (!areGenresValid(req.query.genres))
-    return handleInvalidQueryParameter(res, "genres", req.query.genres);
+  if (!areGenresValid(genres))
+    return handleInvalidQueryParameter(res, "genres", genres);
 
   const query = generateGetBooksQuery(req);
   const readTxResult = txRead(query);
@@ -127,7 +128,6 @@ router.put("/:uuid", (req, res) => {
 });
 
 //TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
-//TODO albo uzyc checkIfBookWithGivenUuidExists
 router.delete("/:uuid", (req, res) => {
   const uuid = req.params.uuid;
   const query = `

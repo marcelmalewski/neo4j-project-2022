@@ -19,6 +19,17 @@ pytanie czy przy puszu te developerskie rzeczy są obecne
   * npm run prodStart
   * yarn prodStart
 
+#### 3. Logowanie się:
+Konto na które można się zalogować:
+* login: `123456`
+* name: `jan kow`
+* password: `1234523452345`
+Albo po prostu używać tokenu:
+* accessToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6IjEyMzQ1NiIsInJvbGUiOiJDTElFTlQiLCJpYXQiOjE2NzI5NDg3ODF9.CoRv9trhQf4vFR79tRcaRXQCbPrFRqLHyUnEiBDgSJc`
+ale w .env trzeba ustawić:
+* ACCESS_TOKEN_SECRET=d4eac626c1ed78819dd78908c9c8dc9192316503ea416e0fafa3c245857f32bb34e53e63d9fa8c7cfd4d63a8559239e6da4ab5fc784028d3b3a72e0
+  b1cbd8274
+
 ## Podstawowe endpointy:
 
 ### 1. Pobierz wszystkie książki
@@ -40,6 +51,7 @@ http://localhost:5000/books?title=The Great Gatsby&genres=Fiction     ,Romance&a
 http://localhost:5000/books/popular/5
 
 ### 3. Pobierz szczegóły książki po uuid
+* Książka musi istnieć
 #### Endpoint: GET /books/details/:bookUUid
 #### zwraca:
 * tytuł
@@ -57,6 +69,7 @@ http://localhost:5000/books/details/11
 
 ### 4. Dodawanie komentarza do książki
 #### Endpoint: POST:
+* Książka musi istnieć
 * dla zalogowanej osoby komentarz przypisany będzie do niej
   (wymagany header: `Authorization: 'Bearer twoj_token'`)
   POST /books/:bookId/comments
@@ -70,6 +83,7 @@ http://localhost:5000/books/11/comments/not-logged-in-person
 http://localhost:5000/books/11/comments
 
 ### 5. Dodawanie oceny książki
+* Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /books/:bookId/ratings
@@ -82,6 +96,7 @@ data musi być w przyszłości.
 http://localhost:5000/books/11/ratings
 
 ### 6. Rezerwacja książki
+* Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * nie można zarezerwować dwa razy jednej książki (chodzi o uuid, konkretny egzemplarz),
@@ -94,6 +109,7 @@ można edytować rezerwacje albo usunąć i stworzyć od nowa
 http://localhost:5000/books/11/reservations
 
 ### 7. Potwierdzenie rezerwacji
+* Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
@@ -103,6 +119,7 @@ http://localhost:5000/books/11/reservations
 http://localhost:5000/books/11/reservations/confirm
 
 ### 8. Edycja rezerwacji
+* Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
@@ -115,6 +132,7 @@ http://localhost:5000/books/11/reservations/confirm
 http://localhost:5000/books/11/reservations
 
 #### 9. Usuwanie rezerwacji
+* Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
@@ -155,13 +173,14 @@ http://localhost:5000/register
 W kodzie jest to nazwane jako `librarian` bardziej tematycznie
 
 ### 1. Dodawanie książki
-* możliwe tylko dla zalogowanego bibliotekarza
+* możliwe tylko dla zalogowanego bibliotekarza (Role: `LIBRARIAN`)
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /librarian/books
 #### Body:
 * `title` - tytuł
 * `description` - opis
-* `releaseDate` - data wydania
-* `imageLink` - link do zdjęcia
+* `releaseDate` - data wydania (przyjmuje tylko date tego typu: "2000-10-01")
+* `imageLink` - link do zdjęcia (może być pustym stringiem)
 * `genres` - gatunki (musi być array, muszą istnieć w bazie)
 * `authors` - autorzy (musi być array, muszą istnieć w bazie)
 * `publishingHouse` - wydawnictwo (musi istnieć w bazie)
@@ -170,6 +189,7 @@ http://localhost:5000/books
 
 ### 2. Edycja książki
 * możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 * książka musi istnieć
 #### Endpoint: PATCH /librarian/books/:bookId
 #### Body:
@@ -185,6 +205,7 @@ http://localhost:5000/books/11
 
 ### 3. Usuwanie książki
 * możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
 * książka musi istnieć
 #### Endpoint: DELETE /books/:bookId
 #### Przykładowe zapytanie:

@@ -1,9 +1,9 @@
-CREATE (Fantasy:Genre {name: "Fantasy"})
-CREATE (romance:Genre {name: "Romance"})
-CREATE (fiction:Genre {name: "Fiction"})
-CREATE (magicalRealism:Genre {name: "Magical Realism"})
-CREATE (adventure:Genre {name: "Adventure"})
-CREATE (mystery:Genre {name: "Mystery"})
+CREATE (Fantasy:Genre {name: "FANTASY"})
+CREATE (romance:Genre {name: "ROMANCE"})
+CREATE (fiction:Genre {name: "FICTION"})
+CREATE (magicalRealism:Genre {name: "MAGICAL REALISM"})
+CREATE (adventure:Genre {name: "ADVENTURE"})
+CREATE (mystery:Genre {name: "MYSTERY"})
 
 CREATE
   (b1:Book {uuid: apoc.create.uuid(), title: "Pride and Prejudice", description: "Classic nove", release_date: date("1813-01-01"), image_link: "example.com" })-[:WRITTEN_BY]->(:Author { uuid: "1", name: "Jane Austen" }),
@@ -66,6 +66,7 @@ CREATE (person:Person {login: "2", name: "Jan Kowalski", role: "CLIENT", passwor
 CREATE (person2:Person {login: apoc.create.uuid(), name: "Adam Nowak", role: "CLIENT", password: "1234"})
 CREATE (person3:Person {login: "4", name: "Krzysztof Krawczyk", role: "CLIENT", password: "1234"})
 CREATE (person4:Person {login: "5", name: "Janusz Kowalski", role: "CLIENT", password: "1234"})
+CREATE (person5:Person {login: "1234567", name: "jan kow", role: "LIBRARIAN", password: "1234523452345"})
 
 CREATE (person)-[:RATED {rating: 5, expiry_date: date("2023-12-26")}]->(Harry)
 CREATE (person2)-[:RATED {rating: 4, expiry_date: date("2023-12-26")}]->(Harry)
@@ -73,10 +74,10 @@ CREATE (person3)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(Harry)
 CREATE (person4)-[:RATED {rating: 9, expiry_date: date("2023-12-26")}]->(b9)
 CREATE (person4)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(b10)
 
-CREATE (person)-[:COMMENTED {comment: "Great book!", date: datetime("2022-12-26T11:17:10.022000000Z")}]->(Harry)
-CREATE (person2)-[:COMMENTED {comment: "Not bad", date: datetime("2022-12-27T11:17:10.022000000Z")}]->(Harry)
-CREATE (person3)-[:COMMENTED {comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
-CREATE (notLoggedPerson)-[:COMMENTED {comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
+CREATE (person)-[:COMMENTED {uuid: "1", comment: "Great book!", date: datetime("2022-12-26T11:17:10.022000000Z")}]->(Harry)
+CREATE (person2)-[:COMMENTED {uuid: "2", comment: "Not bad", date: datetime("2022-12-27T11:17:10.022000000Z")}]->(Harry)
+CREATE (person3)-[:COMMENTED {uuid: "3", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
+CREATE (notLoggedPerson)-[:COMMENTED {uuid: "4", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 
 CREATE (person)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(harry)
 

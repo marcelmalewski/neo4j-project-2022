@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { txRead } = require("./neo4jSessionUtils");
+const { Genres } = require("../consts/consts");
 
 const handleNotFound = (name, withWhat, withWhatValue, res) => {
   return res.status(400).send({
@@ -61,6 +62,15 @@ const checkIfBookWithGivenUuidExists = (req, res, next) => {
     .catch((error) => res.status(500).send(error));
 };
 
+const validateGenresArr = (genres) => {
+  let genresAreValid = true;
+  const parsedGenres = genres.map((genre) => genre.trim().toUpperCase());
+  parsedGenres.forEach((genre) => {
+    if (!Genres.includes(genre)) genresAreValid = false;
+  });
+  return genresAreValid;
+};
+
 module.exports = {
   handleNotFound,
   isParamEmpty,
@@ -68,4 +78,5 @@ module.exports = {
   authenticateToken,
   checkIfBookWithGivenUuidExists,
   isDateValid,
+  validateGenresArr,
 };

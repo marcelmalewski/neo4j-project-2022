@@ -6,56 +6,67 @@ const {
   isParamEmpty,
   handleInvalidQueryParameter,
   isDateValid,
+  authenticateToken,
 } = require("../utils/routesUtils");
-const { areGenresValid } = require("../utils/booksUtils");
+const {
+  areGenresValid,
+  checkIfPublishingHouseIsValid,
+  createQuery,
+} = require("../utils/librarianUtils");
 const { checkIfAuthorsAreValid } = require("../utils/librarianUtils");
 
-// * `title` - tytuł
-// * `description` - opis
-// * `releaseDate` - data wydania
-// * `imageLink` - link do zdjęcia
-// * `genres` - gatunki
-//TODO dodac weryfikacja logowania
-//TODO stestowac checkIfAuthorsAreValid
-// //TODO stestowac checkIfPublishingHouseIsValid
-// ,
-//   checkIfPublishingHouseIsValid,
-router.post("/books", checkIfAuthorsAreValid, (req, res) => {
-  const { title, description, releaseDate, imageLink, genres } = req.body;
+router.post(
+  "/books",
+  authenticateToken,
+  checkIfAuthorsAreValid,
+  checkIfPublishingHouseIsValid,
+  (req, res) => {
+    const {
+      title,
+      description,
+      releaseDate,
+      imageLink,
+      genres,
+      authorsUuids,
+      publishingHouse,
+    } = req.body;
 
-  if (isParamEmpty(title))
-    return handleInvalidQueryParameter(res, "title", title);
+    if (isParamEmpty(title))
+      return handleInvalidQueryParameter(res, "title", title);
 
-  if (isParamEmpty(description))
-    return handleInvalidQueryParameter(res, "description", description);
+    if (isParamEmpty(description))
+      return handleInvalidQueryParameter(res, "description", description);
 
-  if (!isDateValid(releaseDate))
-    return handleInvalidQueryParameter(res, "releaseDate", releaseDate);
+    if (!isDateValid(releaseDate))
+      return handleInvalidQueryParameter(res, "releaseDate", releaseDate);
 
-  if (imageLink === undefined)
-    return handleInvalidQueryParameter(res, "imageLink", imageLink);
+    if (imageLink === undefined)
+      return handleInvalidQueryParameter(res, "imageLink", imageLink);
 
-  if (genres === undefined || !areGenresValid(genres))
-    return handleInvalidQueryParameter(res, "genres", genres);
+    if (!areGenresValid(genres))
+      return handleInvalidQueryParameter(res, "genres", genres);
 
-  res.status(201).send("yes");
+    const parsedGenres = genres.map((genre) => genre.trim().toUpperCase());
+    const year = releaseDate.substring(0, 4);
+    const query = createQuery(
+      title,
+      description,
+      releaseDate,
+      imageLink,
+      parsedGenres,
+      authorsUuids,
+      publishingHouse,
+      year
+    );
 
-  // const query = `
-  //     MATCH (publishingHouse:PublishingHouse {name: '${publishingHouse}'})
-  //     CREATE (book:Book {uuid: apoc.create.uuid(), title: '${title}', description: '${description}', release_date: '${releaseDate}', image_link: '${imageLink}'})
-  //     CREATE (book)-[:PUBLISHED_BY]->(publishingHouse)
-  //     RETURN book`;
-  //
-  // const readTxResultPromise = txWrite(session, query);
-  //
-  // const session = driver.session();
-  // readTxResultPromise
-  //   .then((result) => {
-  //     res.status(201).send(result.records[0].get("book").properties);
-  //   })
-  //   .catch((error) => res.status(500).send(error))
-  //   .then(() => session.close());
-});
+    const writeTxResult = txWrite(query);
+    writeTxResult
+      .then((result) => {
+        res.status(201).send(result.records[0].get("b").properties);
+      })
+      .catch((error) => res.status(500).send(error));
+  }
+);
 
 router.put("/books/:id", async (req, res) => {
   const id = req.params.id;

@@ -10,7 +10,7 @@ router.post("/", authenticateToken, (req, res) => {
   const query = `
     MATCH (book:Book {uuid: '${bookUuid}'})
     MATCH (person:Person {login: '${clientLogin}'})
-    CREATE (person)-[comment:COMMENTED {comment: '${comment}', date: datetime()}]->(book)
+    CREATE (person)-[comment:COMMENTED {uuid: apoc.create.uuid(), comment: '${comment}', date: datetime()}]->(book)
     RETURN comment`;
 
   handleCommentPostRequest(req, res, query, bookUuid);
@@ -22,7 +22,7 @@ router.post("/not-logged-in-client", (req, res) => {
   const query = `
     MATCH (book:Book {uuid: '${bookUuid}'})
     MATCH (person:Person {login: "0"})
-    CREATE (person)-[comment:COMMENTED {comment: '${comment}', date: datetime()}]->(book)
+    CREATE (person)-[comment:COMMENTED {uuid: apoc.create.uuid(), comment: '${comment}', date: datetime()}]->(book)
     RETURN comment`;
 
   handleCommentPostRequest(req, res, query, bookUuid);

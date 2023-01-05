@@ -1,4 +1,5 @@
-const { Genres, SortBy, SortOrder } = require("../consts/consts");
+const { SortBy, SortOrder } = require("../consts/consts");
+const { validateGenresArr } = require("./routesUtils");
 
 generateGetBooksQuery = (req) => {
   const { title, authors, genres, sortBy, sortOrder } = req.query;
@@ -12,7 +13,7 @@ generateGetBooksQuery = (req) => {
     whereConditions.push(`book.title = "${title}"`);
   }
   if (authors) {
-    const authorsArr = authors.split(",").map((author) => author.trim());
+    const authorsArr = authors.split(",");
     authorsArr.forEach((author) => {
       whereConditions.push(`(book)-[:WRITTEN_BY]->(:Author {name: '${author}'`);
     });
@@ -67,16 +68,9 @@ const isSortOrderValid = (sortOrder) => {
 
 const areGenresValid = (genres) => {
   if (genres === undefined) return true;
-  let genresAreValid = true;
 
-  const genresAsArr = genres
-    .split(",")
-    .map((genre) => genre.trim().toUpperCase());
-  genresAsArr.forEach((genre) => {
-    if (!Genres.includes(genre)) genresAreValid = false;
-  });
-
-  return genresAreValid;
+  const genresAsArr = genres.split(",");
+  validateGenresArr(genresAsArr);
 };
 
 const isLimitValid = (limit) => {

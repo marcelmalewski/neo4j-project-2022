@@ -53,9 +53,7 @@ router.post("/login", (req, res) => {
         const accessToken = jwt.sign(person, process.env.ACCESS_TOKEN_SECRET);
         return res.json({ accessToken: accessToken });
       } else {
-        return res
-          .status(401)
-          .send({ message: "Password or login is incorrect" });
+        return res.status(401).send({ message: "Password is incorrect" });
       }
     })
     .catch((error) => {
