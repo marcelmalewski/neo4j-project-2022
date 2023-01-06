@@ -3,10 +3,11 @@ const {
   handleInvalidQueryParameter,
   validateGenresArr,
   handleNotFound,
+  isDateValid,
 } = require("./routesUtils");
 const { txRead } = require("./neo4jSessionUtils");
 
-const createQuery = (
+const createPostBookQuery = (
   title,
   description,
   releaseDate,
@@ -18,33 +19,87 @@ const createQuery = (
 ) => {
   let query = `
         CREATE (b:Book {
+          uuid: apoc.create.uuid(),
           title:' ${title}',
           description: '${description}',
-          releaseDate: date('${releaseDate}'),
-          imageLink: '${imageLink}'
+          release_date: date('${releaseDate}'),
+          image_link: '${imageLink}'
         }) 
-        WITH b`;
+        MERGE (y:Year {year: ${year}}) 
+        CREATE (b)-[:YEAR_OF_PUBLICATION]->(y) 
+        WITH b 
+        `;
 
   for (let i = 0; i < genres.length; i++) {
     query += `
       MATCH (g${i}:Genre {name: '${genres[i]}'})
       CREATE (b)-[:HAS_GENRE]->(g${i}) 
-      WITH b`;
+      WITH b
+       `;
   }
 
   for (let i = 0; i < authorsUuids.length; i++) {
     query += `
         MATCH (a${i}:Author { uuid: '${authorsUuids[i]}' })
-        CREATE (b)-[:WRITTEN]->(a${i}) 
-        WITH b`;
+        CREATE (b)-[:WRITTEN_BY]->(a${i}) 
+        WITH b
+         `;
   }
 
-  query += `
+  query += ` 
         MATCH (ph:PublishingHouse { name: '${publishingHouse}' })
         CREATE (b)-[:PUBLISHED_BY]->(ph)
-        CREATE (b)-[:YEAR_OF_PUBLICATION]->(:Year {year: ${year}})
-        RETURN b
+        RETURN b`;
+  return query;
+};
+
+const createPutBookQuery = (
+  bookId,
+  title,
+  description,
+  releaseDate,
+  imageLink,
+  genres,
+  authorsUuids,
+  publishingHouse,
+  year
+) => {
+  let query = `
+        MATCH (:Author)<-[w:WRITTEN_BY]-(b:Book {uuid: '${bookId}'})-[h:HAS_GENRE]->(:Genre)
+        DELETE w, h
+        WITH b
+        MATCH (b)-[y:YEAR_OF_PUBLICATION]->(:Year)
+        DELETE y
+        WITH b
+        MATCH (b)-[p:PUBLISHED_BY]->(:PublishingHouse)
+        DELETE p
+        WITH b
+        SET b.title='${title}', b.description='${description}', b.release_date=date('${releaseDate}'), b.image_link='${imageLink}'
+        MERGE (y:Year {year: ${year}})
+        CREATE (b)-[:YEAR_OF_PUBLICATION]->(y)
+        WITH b 
         `;
+
+  for (let i = 0; i < genres.length; i++) {
+    query += `
+      MATCH (g${i}:Genre {name: '${genres[i]}'})
+      CREATE (b)-[:HAS_GENRE]->(g${i}) 
+      WITH b 
+      `;
+  }
+
+  for (let i = 0; i < authorsUuids.length; i++) {
+    query += `
+        MATCH (a${i}:Author { uuid: '${authorsUuids[i]}'})
+        CREATE (b)-[:WRITTEN_BY]->(a${i})
+        WITH b
+        `;
+  }
+
+  query += ` 
+        MATCH (ph:PublishingHouse { name: '${publishingHouse}' })
+        CREATE (b)-[:PUBLISHED_BY]->(ph)
+        RETURN b`;
 
   return query;
 };
@@ -98,9 +153,32 @@ const areGenresValid = (genres) => {
   return validateGenresArr(genres);
 };
 
+const validateBookParams = (req, res, next) => {
+  const { title, description, releaseDate, imageLink, genres } = req.body;
+
+  if (isParamEmpty(title))
+    return handleInvalidQueryParameter(res, "title", title);
+
+  if (isParamEmpty(description))
+    return handleInvalidQueryParameter(res, "description", description);
+
+  if (!isDateValid(releaseDate))
+    return handleInvalidQueryParameter(res, "releaseDate", releaseDate);
+
+  if (imageLink === undefined)
+    return handleInvalidQueryParameter(res, "imageLink", imageLink);
+
+  if (!areGenresValid(genres))
+    return handleInvalidQueryParameter(res, "genres", genres);
+
+  next();
+};
+
 module.exports = {
   checkIfAuthorsAreValid,
   checkIfPublishingHouseIsValid,
   areGenresValid,
-  createQuery,
+  createPostBookQuery,
+  validateBookParams,
+  createPutBookQuery,
 };

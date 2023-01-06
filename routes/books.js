@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
+const { txRead } = require("../utils/neo4jSessionUtils");
 const {
   generateGetBooksQuery,
   isSortByValid,
@@ -102,41 +102,6 @@ router.get("/details/:uuid", (req, res) => {
         average_rating: result.records[0].get("average_rating"),
       };
       res.json(bookDetails);
-    })
-    .catch((error) => res.status(500).send(error));
-});
-
-//TODO brak rezultatu rowna sie 400
-//TODO przeniesc do librarian
-router.put("/:uuid", (req, res) => {
-  const uuid = req.params.uuid;
-  const title = req.body.title;
-  const description = req.body.description;
-  const releaseDate = req.body.releaseDate;
-  const imageLink = req.body.imageLink;
-
-  const query = `
-    MATCH (book:Book {uuid: '${uuid}'})
-    SET book.title = '${title}', book.description = '${description}', book.release_date = date('${releaseDate}'), book.image_link = '${imageLink}' 
-    RETURN book`;
-  const readTxResult = txWrite(query);
-  readTxResult
-    .then((result) => {
-      res.json(result.records[0].get("book").properties);
-    })
-    .catch((error) => res.status(500).send(error));
-});
-
-//TODO moze po rezultacie mozna wywnioskowac czy kasowanie sie udalo
-router.delete("/:uuid", (req, res) => {
-  const uuid = req.params.uuid;
-  const query = `
-    MATCH (book:Book {uuid: '${uuid}'})
-    DETACH DELETE book`;
-  const writeTxResult = txWrite(query);
-  writeTxResult
-    .then(() => {
-      res.json({ message: "Deleted book with uuid: " + uuid });
     })
     .catch((error) => res.status(500).send(error));
 });

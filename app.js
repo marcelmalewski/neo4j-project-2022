@@ -5,7 +5,7 @@ const comments = require("./routes/comments");
 const ratings = require("./routes/ratings");
 const reservations = require("./routes/reservations");
 const auth = require("./routes/auth");
-const librarian = require("./routes/librarian");
+const librarianBooks = require("./routes/librarianBooks");
 const { driver } = require("neo4j-driver");
 const { createConstraints } = require("./utils/appUtils");
 
@@ -40,7 +40,7 @@ try {
   app.use("/books/:uuid/ratings", ratings);
   app.use("/books", reservations);
   app.use("", auth);
-  app.use("", librarian);
+  app.use("/books", librarianBooks);
 
   console.log(`Connected to Neo4J.`);
   const port = process.env.PORT || 5000;
