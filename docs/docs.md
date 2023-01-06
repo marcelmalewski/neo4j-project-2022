@@ -1,4 +1,27 @@
 # Mini dokumentacja
+
+## Uruchamianie serwera:
+#### 1. Przygotowanie pliku .env, musi się znajdować w folderze `config` i mieć nazwę `.env`
+
+#### 2. Uruchamianie
+* #### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
+pytanie, czy przy puszu te developerskie rzeczy są obecne
+
+* #### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
+  * npm run prodStart
+  * yarn prodStart
+
+#### 3. Logowanie się:
+Konto, na które można się zalogować:
+* login: `123456`
+* name: `"jan library"`
+* password: `1234523452345`
+Albo po prostu używać tokenu:
+* accessToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6IjEyMzQ1NiIsInJvbGUiOiJMSUJSQVJJQU4iLCJpYXQiOjE2NzMwNDM2MDZ9.s00FbBPb8j8Vl7OAlL4JVKSLR7cOAtFeRFPbSJ4BuFA`
+ale w .env trzeba ustawić:
+* ACCESS_TOKEN_SECRET=d4eac626c1ed78819dd78908c9c8dc9192316503ea416e0fafa3c245857f32bb34e53e63d9fa8c7cfd4d63a8559239e6da4ab5fc784028d3b3a72e0
+  b1cbd8274
+
 ## Encje:
 to stany rezerwacji przeniesc do czesci gdzie są wszystkie encje
 #### stany rezerwacji:
@@ -7,28 +30,6 @@ to stany rezerwacji przeniesc do czesci gdzie są wszystkie encje
 * `WAITING`
 * `RENTED OUT`
 * `RETURNED`
-
-## Uruchamianie serwera:
-#### 1. Przygotowanie pliku .env
-
-#### 2. Uruchamianie
-* #### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
-pytanie czy przy puszu te developerskie rzeczy są obecne
-
-* #### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
-  * npm run prodStart
-  * yarn prodStart
-
-#### 3. Logowanie się:
-Konto na które można się zalogować:
-* login: `123456`
-* name: `jan kow`
-* password: `1234523452345`
-Albo po prostu używać tokenu:
-* accessToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6IjEyMzQ1NiIsInJvbGUiOiJDTElFTlQiLCJpYXQiOjE2NzI5NDg3ODF9.CoRv9trhQf4vFR79tRcaRXQCbPrFRqLHyUnEiBDgSJc`
-ale w .env trzeba ustawić:
-* ACCESS_TOKEN_SECRET=d4eac626c1ed78819dd78908c9c8dc9192316503ea416e0fafa3c245857f32bb34e53e63d9fa8c7cfd4d63a8559239e6da4ab5fc784028d3b3a72e0
-  b1cbd8274
 
 ## Podstawowe endpointy:
 
@@ -68,7 +69,6 @@ http://localhost:5000/books/popular/5
 http://localhost:5000/books/details/11
 
 ### 4. Dodawanie komentarza do książki
-#### Endpoint: POST:
 * Książka musi istnieć
 * dla zalogowanej osoby komentarz przypisany będzie do niej
   (wymagany header: `Authorization: 'Bearer twoj_token'`)
@@ -82,18 +82,37 @@ http://localhost:5000/books/11/comments/not-logged-in-person
 #### Przykładowe zapytanie dla zalogowanej osoby:
 http://localhost:5000/books/11/comments
 
+### 5. Pobierz komentarze do książki
+* Książka musi istnieć
+#### Endpoint: GET /books/:bookUuid/comments
+#### Przykładowe zapytanie:
+http://localhost:5000/books/11/comments
+
 ### 5. Dodawanie oceny książki
 * Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 #### Endpoint: POST /books/:bookId/ratings
 #### zawartość body:
-* `rating` - ocena (1-10)
-* `expiryDate` - kiedy ocena wygasa (opcjonalne, default: `nie wygasa`)
-przyjmuje tylko date tego typu: "2000-10-01" , rok nie może przekraczać roku `4000`,
+* `rating` - ocena (liczba, 1-10)
+* `expiryDate` - kiedy ocena wygasa (opcjonalne, default: `nie wygasa`) 
+ przyjmuje tylko date tego typu: "2000-10-01", rok nie może przekraczać roku `4000`,
 data musi być w przyszłości.
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/ratings
+
+### 6. Edycja oceny książki
+* Ocena musi istnieć
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* możesz edytować tylko swoją ocene
+#### Endpoint: PUT /ratings/:ratingId
+#### Body:
+* `rating` - ocena (liczba, 1-10)
+* `expiryDate` - kiedy ocena wygasa (opcjonalne, default: `nie wygasa`)
+  przyjmuje tylko date tego typu: "2000-10-01", rok nie może przekraczać roku `4000`, data musi być w przyszłości.
+#### Przykładowe zapytanie:
+http://localhost:5000/ratings/11
 
 ### 6. Rezerwacja książki
 * Książka musi istnieć
@@ -153,7 +172,7 @@ http://localhost:5000/books/11/reservations/history
 ### 11. Rejestracja
 #### Endpoint: POST /register
 #### Body:
-* login (unikalny, 20 > długość > 3)
+* login (unikalny, 20 > długość > 3, nie może to być: `Not logged client`)
 * name (imie + spacje + nazwisko, np. "Jan Kowalski", 20 > długość)
 * password (20 > długość > 8)
 #### Przykładowe zapytanie:
@@ -185,7 +204,7 @@ W kodzie jest to nazwane jako `librarian` bardziej tematycznie
 * `authors` - autorzy (musi być array, muszą istnieć w bazie)
 * `publishingHouse` - wydawnictwo (musi istnieć w bazie)
 #### Przykładowe zapytanie:
-http://localhost:5000/books
+http://localhost:5000/librarian/books
 
 ### 2. Edycja książki
 * możliwe tylko dla zalogowanego bibliotekarza
@@ -201,13 +220,72 @@ http://localhost:5000/books
 * `authors` - autorzy (musi być array, muszą istnieć w bazie)
 * `publishingHouse` - wydawnictwo (musi istnieć w bazie)
 #### Przykładowe zapytanie:
-http://localhost:5000/books/11
+http://localhost:5000/librarian/books/11
 
 ### 3. Usuwanie książki
 * możliwe tylko dla zalogowanego bibliotekarza
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * książka musi istnieć
-#### Endpoint: DELETE /books/:bookId
+#### Endpoint: DELETE /librarian/books/:bookId
 #### Przykładowe zapytanie:
-http://localhost:5000/books/11
+http://localhost:5000/librarian/books/11
+
+### 4. Dodawanie użytkownika
+Tutaj możesz wybrać role.
+* możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+#### Endpoint: POST /librarian/persons
+#### Body:
+* `login` - login (unikalny, 20 > długość > 3, nie może to być: `Not logged client`)
+* `name` - imie + spacje + nazwisko, np. "Jan Kowalski", 20 > długość
+* `password` - hasło (20 > długość > 8)
+* `role` - rola (może być tylko `CLIENT` lub `LIBRARIAN`)
+#### Przykładowe zapytanie:
+http://localhost:5000/librarian/persons
+
+### 5. Edycja użytkownika
+Tutaj możesz wybrać role.
+* możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* użytkownik musi istnieć
+#### Endpoint: PUT /librarian/persons
+#### Body:
+* `login` - login (unikalny, 20 > długość > 3, nie może to być: `Not logged client`)
+* `name` - imie + spacje + nazwisko, np. "Jan Kowalski", 20 > długość
+* `password` - hasło (20 > długość > 8)
+* `role` - rola (może być tylko `CLIENT` lub `LIBRARIAN`)
+#### Przykładowe zapytanie:
+http://localhost:5000/librarian/persons
+
+### 6. Usuwanie użytkownika
+Można usunąć dowolnego użytkownika
+* możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* użytkownik musi istnieć
+#### Endpoint: DELETE /librarian/persons/:personId
+#### Przykładowe zapytanie:
+http://localhost:5000/librarian/persons/11
+
+### 7. Dodawanie komentarza
+* Może użyć endpointu do dodawania komentarza dostępnego dla każdej zalogowanej osoby.
+
+### 8. Edycja komentarza
+Może edytować dowolny komentarz dowolnego użytkownika.
+* możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* komentarz musi istnieć
+#### Endpoint: PUT /librarian/comments/:commentId
+#### Body:
+* `comment` - komentarz (nie może być pusty ani samymi spacjami, ani krótszy niż 100 znaków)
+#### Przykładowe zapytanie:
+http://localhost:5000/librarian/comments/11
+
+### 9. Usuwanie komentarza
+Może usunąć dowolny komentarz dowolnego użytkownika.
+* możliwe tylko dla zalogowanego bibliotekarza
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* komentarz musi istnieć
+#### Endpoint: DELETE /librarian/comments/:commentId
+#### Przykładowe zapytanie:
+http://localhost:5000/librarian/comments/11
 

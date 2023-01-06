@@ -1,18 +1,24 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const { txWrite } = require("../utils/neo4jSessionUtils");
-const { authenticateToken, handleNotFound } = require("../utils/routesUtils");
+const { txWrite } = require("../../utils/neo4jSessionUtils");
+const {
+  authenticateToken,
+  handleNotFound,
+  authenticateRoleForLibrarian,
+  checkIfBookWithGivenUuidExists,
+} = require("../../utils/routesUtils");
 const {
   checkIfPublishingHouseIsValid,
   createPostBookQuery,
   validateBookParams,
   createPutBookQuery,
-} = require("../utils/librarianBooksUtils");
-const { checkIfAuthorsAreValid } = require("../utils/librarianBooksUtils");
+  checkIfAuthorsAreValid,
+} = require("../../utils/librarianUtils/librarianBooksUtils");
 
 router.post(
   "",
   authenticateToken,
+  authenticateRoleForLibrarian,
   checkIfAuthorsAreValid,
   checkIfPublishingHouseIsValid,
   validateBookParams,
@@ -45,13 +51,16 @@ router.post(
       .then((result) => {
         res.status(201).send(result.records[0].get("b").properties);
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 
 router.put(
   "/:uuid",
   authenticateToken,
+  authenticateRoleForLibrarian,
   checkIfAuthorsAreValid,
   checkIfPublishingHouseIsValid,
   validateBookParams,
@@ -89,25 +98,32 @@ router.put(
 
         res.json(result.records[0].get("b").properties);
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 
-router.delete("/:uuid", (req, res) => {
-  const uuid = req.params.uuid;
-  const query = `
+router.delete(
+  "/:uuid",
+  authenticateToken,
+  authenticateRoleForLibrarian,
+  checkIfBookWithGivenUuidExists,
+  (req, res) => {
+    const uuid = req.params.uuid;
+    const query = `
       MATCH (book:Book {uuid: '${uuid}'})
       DETACH DELETE book`;
 
-  const readTxResultPromise = txWrite(query);
-  readTxResultPromise
-    .then((result) => {
-      if (result.records.length === 0)
-        return handleNotFound("Book", "uuid", uuid, res);
-
-      res.json("Deleted");
-    })
-    .catch((error) => res.status(500).send(error));
-});
+    const readTxResultPromise = txWrite(query);
+    readTxResultPromise
+      .then(() => {
+        res.json({ message: "Book deleted" });
+      })
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
+  }
+);
 
 module.exports = router;

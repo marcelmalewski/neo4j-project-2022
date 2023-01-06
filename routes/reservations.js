@@ -29,7 +29,7 @@ router.get("/reservations/history", authenticateToken, (req, res) => {
     .then((result) => {
       res.json(result.records[0].get("reserved").properties);
     })
-    .catch((error) => res.status(500).send(error))
+    .catch((error) => res.status(500).send({ message: "error", error: error }))
     .then(() => session.close());
 });
 
@@ -62,7 +62,9 @@ router.post(
 
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 
@@ -93,7 +95,9 @@ router.patch(
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 
@@ -115,7 +119,9 @@ router.patch(
       .then((result) => {
         res.json(result.records[0].get("reserved").properties);
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 
@@ -136,7 +142,9 @@ router.delete(
       .then(() => {
         res.json("Reservation deleted");
       })
-      .catch((error) => res.status(500).send(error));
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
   }
 );
 

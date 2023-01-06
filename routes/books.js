@@ -35,7 +35,7 @@ router.get("/", (req, res) => {
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 });
 
 router.get("/popular/:limit", (req, res) => {
@@ -56,7 +56,7 @@ router.get("/popular/:limit", (req, res) => {
     .then((result) => {
       res.json(result.records.map((record) => record.get("book").properties));
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 });
 
 router.get("/details/:uuid", (req, res) => {
@@ -103,7 +103,7 @@ router.get("/details/:uuid", (req, res) => {
       };
       res.json(bookDetails);
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 });
 
 module.exports = router;

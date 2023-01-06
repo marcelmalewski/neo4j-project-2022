@@ -4,8 +4,8 @@ const {
   validateGenresArr,
   handleNotFound,
   isDateValid,
-} = require("./routesUtils");
-const { txRead } = require("./neo4jSessionUtils");
+} = require("../routesUtils");
+const { txRead } = require("../neo4jSessionUtils");
 
 const createPostBookQuery = (
   title,

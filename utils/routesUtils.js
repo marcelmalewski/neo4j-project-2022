@@ -44,6 +44,16 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+const authenticateRoleForLibrarian = (req, res, next) => {
+  const role = req.person.role;
+  if (role !== "LIBRARIAN")
+    return res
+      .status(403)
+      .send({ message: "The required role is at least 'LIBRARIAN'" });
+
+  next();
+};
+
 const checkIfBookWithGivenUuidExists = (req, res, next) => {
   const bookUuid = req.params.uuid;
 
@@ -59,7 +69,7 @@ const checkIfBookWithGivenUuidExists = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const validateGenresArr = (genres) => {
@@ -79,4 +89,5 @@ module.exports = {
   checkIfBookWithGivenUuidExists,
   isDateValid,
   validateGenresArr,
+  authenticateRoleForLibrarian,
 };

@@ -5,7 +5,9 @@ const comments = require("./routes/comments");
 const ratings = require("./routes/ratings");
 const reservations = require("./routes/reservations");
 const auth = require("./routes/auth");
-const librarianBooks = require("./routes/librarianBooks");
+const librarianBooks = require("./routes/librarian/librarianBooks");
+const librarianPersons = require("./routes/librarian/librarianPersons");
+const librarianComments = require("./routes/librarian/librarianComments");
 const { driver } = require("neo4j-driver");
 const { createConstraints } = require("./utils/appUtils");
 
@@ -36,11 +38,13 @@ app.use(express.json());
 
 try {
   app.use("/books", books);
-  app.use("/books/:uuid/comments", comments);
-  app.use("/books/:uuid/ratings", ratings);
+  app.use("/books/:bookUuid/comments", comments);
+  app.use("", ratings);
   app.use("/books", reservations);
   app.use("", auth);
-  app.use("/books", librarianBooks);
+  app.use("/librarian/books", librarianBooks);
+  app.use("/librarian/persons", librarianPersons);
+  app.use("/librarian/comments", librarianComments);
 
   console.log(`Connected to Neo4J.`);
   const port = process.env.PORT || 5000;

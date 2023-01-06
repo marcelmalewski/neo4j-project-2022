@@ -28,7 +28,7 @@ const checkIfReservationExistsAndIsNotConfirmed = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const checkIfBookIsAlreadyReserved = (req, res, next) => {
@@ -49,7 +49,7 @@ const checkIfBookIsAlreadyReserved = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const handleWrongState = (correctState, currentState, uuid, res) => {

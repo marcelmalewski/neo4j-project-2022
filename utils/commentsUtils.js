@@ -20,14 +20,15 @@ const handleCommentPostRequest = (req, res, query, bookUuid) => {
         result.records.map((record) => record.get("comment").properties)
       );
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const isCommentValid = (comment) => {
   if (isParamEmpty(comment)) return false;
-  return comment.length < 100;
+  return comment.length > 100;
 };
 
 module.exports = {
   handleCommentPostRequest,
+  isCommentValid,
 };

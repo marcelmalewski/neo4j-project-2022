@@ -1,5 +1,5 @@
 const neo4j = require("neo4j-driver");
-require("dotenv").config();
+require("dotenv").config({ path: "config/.env" });
 
 const dbConnData = {
   uri: process.env.NEO4J_URI,

@@ -65,20 +65,20 @@ CREATE (person:Person {login: "2", name: "Jan Kowalski", role: "CLIENT", passwor
 CREATE (person2:Person {login: apoc.create.uuid(), name: "Adam Nowak", role: "CLIENT", password: "1234"})
 CREATE (person3:Person {login: "4", name: "Krzysztof Krawczyk", role: "CLIENT", password: "1234"})
 CREATE (person4:Person {login: "5", name: "Janusz Kowalski", role: "CLIENT", password: "1234"})
-CREATE (person5:Person {login: "1234567", name: "jan kow", role: "LIBRARIAN", password: "1234523452345"})
+CREATE (person5:Person {login: "123456", name: "jan library", role: "LIBRARIAN", password: "$2b$10$5uY6LmcDaIQW659AO0/ogOCqevuPPHa8w.EVldcTsQVAnAEWUPa8W"})
 
-CREATE (person)-[:RATED {rating: 5, expiry_date: date("2023-12-26")}]->(Harry)
-CREATE (person2)-[:RATED {rating: 4, expiry_date: date("2023-12-26")}]->(Harry)
-CREATE (person3)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(Harry)
-CREATE (person4)-[:RATED {rating: 9, expiry_date: date("2023-12-26")}]->(b9)
-CREATE (person4)-[:RATED {rating: 2, expiry_date: date("2023-12-26")}]->(b10)
+CREATE (person5)-[:RATED {uuid: "1", rating: 5, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person2)-[:RATED {uuid: "2", rating: 4, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person3)-[:RATED {uuid: "3", rating: 2, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person4)-[:RATED {uuid: "4", rating: 9, expiry_date: date("2023-12-26")}]->(b9)
+CREATE (person4)-[:RATED {uuid: "5", rating: 2, expiry_date: date("2023-12-26")}]->(b10)
 
-CREATE (person)-[:COMMENTED {uuid: "1", comment: "Great book!", date: datetime("2022-12-26T11:17:10.022000000Z")}]->(Harry)
+CREATE (person5)-[:COMMENTED {uuid: "1", comment: "Great book!", date: datetime("2022-12-26T11:17:10.022000000Z")}]->(Harry)
 CREATE (person2)-[:COMMENTED {uuid: "2", comment: "Not bad", date: datetime("2022-12-27T11:17:10.022000000Z")}]->(Harry)
 CREATE (person3)-[:COMMENTED {uuid: "3", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 CREATE (notLoggedPerson)-[:COMMENTED {uuid: "4", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 
-CREATE (person)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(Harry)
+CREATE (person5)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(Harry)
 
 MATCH (p:Person {login: "123456"})
 MATCH (b:Book {title: "Harry Potter"})

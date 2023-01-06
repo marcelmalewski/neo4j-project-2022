@@ -3,35 +3,24 @@ const router = express.Router({ mergeParams: true });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { txRead } = require("../utils/neo4jSessionUtils");
+const { handleNotFound } = require("../utils/routesUtils");
 const {
-  handleNotFound,
-  handleInvalidQueryParameter,
-} = require("../utils/routesUtils");
-const {
-  isLoginValid,
-  isNameValid,
-  isPasswordValid,
   sendRegisterRequest,
+  validPersonParams,
+  hashPassword,
 } = require("../utils/authUtils");
+const { Roles } = require("../consts/consts");
 require("dotenv").config();
 
-router.post("/register", async (req, res) => {
-  const { login, name, password } = req.body;
-  if (!isLoginValid(login))
-    return handleInvalidQueryParameter(res, "login", login);
-
-  if (!isNameValid(name)) return handleInvalidQueryParameter(res, "name", name);
-
-  if (!isPasswordValid(password))
-    return handleInvalidQueryParameter(res, "password", password);
-
-  try {
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    return await sendRegisterRequest(res, login, name, hashedPassword);
-  } catch {
-    res.status(500).send();
-  }
+router.post("/register", validPersonParams, hashPassword, async (req, res) => {
+  const { login, name } = req.body;
+  const hashedPassword = req.hashedPassword;
+  const query = `
+    CREATE (person:Person {login: '${login}', name: '${name}', role: '${Roles.CLIENT}', password: '${hashedPassword}'})
+    RETURN person
+    `;
+  const message = `Person Registered`;
+  return await sendRegisterRequest(res, query, message);
 });
 
 router.post("/login", (req, res) => {
@@ -57,7 +46,7 @@ router.post("/login", (req, res) => {
       }
     })
     .catch((error) => {
-      res.status(500).send(error);
+      res.status(500).send({ message: "error", error: error });
     });
 });
 
