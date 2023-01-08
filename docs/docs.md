@@ -1,17 +1,26 @@
 # Mini dokumentacja
 
 ## Uruchamianie serwera:
-#### 1. Przygotowanie pliku .env, musi się znajdować w folderze `config` i mieć nazwę `.env`
+#### 1. (WYMAGANE) Przygotowanie pliku .env, musi się znajdować w folderze `config` i mieć nazwę `.env`
+//TODO
 
-#### 2. Uruchamianie
+#### 2. (WYMAGANE) Uruchomienie startowego pliku
+plik zajmuje się stworzeniem constraintsów
+//TODO
+
+#### 3. (WYMAGANE) Uruchamianie
 * #### 1. Serwer wersja developerska (wymaga nodemon) dwie opcje:
-pytanie, czy przy puszu te developerskie rzeczy są obecne
+//TODO pytanie, czy przy puszu te developerskie rzeczy są obecne
 
 * #### 2. Serwer wersja produkcyjna (nie wymaga nodemon) dwie opcje:
   * npm run prodStart
   * yarn prodStart
 
-#### 3. Logowanie się:
+#### 4. Dodanie danych testowych
+//TODO
+
+
+#### 5. Jeżeli dodaliśmy dane testowe to możemy skorzystać z Obecnego tam konta:
 Konto, na które można się zalogować:
 * login: `123456`
 * name: `"jan library"`
@@ -88,6 +97,13 @@ http://localhost:5000/books/11/comments
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/comments
 
+### 6. Pobierz wszystkie oceny danej książki
+* Książka musi istnieć
+#### Endpoint: GET /books/:bookUuid/ratings
+#### Przykładowe zapytanie:
+http://localhost:5000/books/11/ratings
+
+
 ### 5. Dodawanie oceny książki
 * Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
@@ -127,49 +143,108 @@ można edytować rezerwacje albo usunąć i stworzyć od nowa
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations
 
-### 7. Potwierdzenie rezerwacji
+### 7. Edycja rezerwacji
 * Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
-* można potwierdzić tylko rezerwacje o stanie `NOT CONFIRMED`
-#### Endpoint: PATCH /books/:bookId/reservations/confirm
-#### Przykładowe zapytanie:
-http://localhost:5000/books/11/reservations/confirm
-
-### 8. Edycja rezerwacji
-* Książka musi istnieć
-* możliwe tylko dla zalogowanych użytkowników
-* wymagany header: `Authorization: 'Bearer twoj_token'`
-* rezerwacja musi istnieć
+* rezerwacja musi być twoja
 * możliwe tylko dla rezerwacji o stanie `NOT CONFIRMED`
-#### Endpoint: PATCH /books/:bookId/reservations
+#### Endpoint: PATCH /reservations/:reservationUuid
 #### Body:
 * `rentalPeriodInDays` - na ile dni chcemy wypożyczyć książkę
-(liczba, ale może być też jako string np. `"5"`, mniejsza niż 60 i większa od 0)
+  (liczba, ale może być też jako string np. `"5"`, mniejsza niż 60 i większa od 0)
 #### Przykładowe zapytanie:
-http://localhost:5000/books/11/reservations
+http://localhost:5000/reservations/11
+
+### 8. Potwierdzenie rezerwacji
+* Książka musi istnieć
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* rezerwacja musi istnieć
+* rezerwacja musi być twoja
+* Tylko rezerwacje o stanie `NOT CONFIRMED`
+#### Endpoint: PATCH /reservations/:reservationUuid/confirm
+#### Przykładowe zapytanie:
+http://localhost:5000/reservations/11/confirm
+
+### 9. Zmiana stanu rezerwacji na "WAITING"
+Książka czeka na, klient, który może już ją wypożyczyć
+* Książka musi istnieć
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* rezerwacja musi istnieć
+* rezerwacja musi być twoja
+* Tylko rezerwacje o stanie `CONFIRMED`
+#### Endpoint: PATCH /reservations/:reservationUuid/waiting
+#### Przykładowe zapytanie:
+http://localhost:5000/reservations/11/waiting
+
+### 10. Zmiana stanu rezerwacji na "RENTED OUT"
+Książka jest już wypożyczona
+* Książka musi istnieć
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* rezerwacja musi istnieć
+* rezerwacja musi być twoja
+* Tylko rezerwacje o stanie `WAITING`
+#### Endpoint: PATCH /reservations/:reservationUuid/rented-out
+#### Przykładowe zapytanie:
+http://localhost:5000/reservations/11/rented-out
+
+### 12. Zmiana stanu rezerwacji na "RETURNED"
+Książka jest już wypożyczona
+* Książka musi istnieć
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+* rezerwacja musi istnieć
+* rezerwacja musi być twoja
+* Tylko rezerwacje o stanie `RENTED OUT`
+#### Endpoint: PATCH /reservations/:reservationUuid/returned
+#### Przykładowe zapytanie:
+http://localhost:5000/reservations/11/returned
 
 #### 9. Usuwanie rezerwacji
 * Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
 * rezerwacja musi istnieć
+* rezerwacja musi być twoja
 * możliwe tylko dla rezerwacji o stanie `NOT CONFIRMED`
-#### Endpoint: DELETE /books/:bookId/reservations
+#### Endpoint: DELETE /reservations/:reservationUuid
 #### Przykładowe zapytanie:
-http://localhost:5000/books/11/reservations
+http://localhost:5000/reservations/11
 
 ### 10. Pobranie historii rezerwacji
 Rezerwacje, które już się zakończyły, posortowane po dacie, kiedy zostały oddane (stan `RETURNED`).
 Posortowane malejąco.
 * możliwe tylko dla zalogowanych użytkowników
 * wymagany header: `Authorization: 'Bearer twoj_token'`
-#### Endpoint: GET /books/:bookId/reservations/history
+#### Endpoint: GET /reservations/history
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/reservations/history
 
-### 11. Rejestracja
+### 11. Pobieranie wszystkich rezerwacji danego użytkownika
+Wszystkie rezerwacje o każdym stanie
+* możliwe tylko dla zalogowanych użytkowników
+* wymagany header: `Authorization: 'Bearer twoj_token'`
+#### Endpoint: GET /reservations
+#### return body:
+* `rental_period_in_days` - na ile dni wypożyczono książkę
+* `state_update_date` - data ostatniej zmiany stanu rezerwacji
+* `state` - stan rezerwacji
+* `creation_date` - data utworzenia rezerwacji
+* `uuid` - uuid rezerwacji
+* `book`:
+  * `uuid` - uuid książki
+  * `title` - tytuł książki
+  * `description` - opis książki
+  * `release_date` - data wydania książki
+  * `image_link` - link do zdjęcia książki
+#### Przykładowe zapytanie:
+http://localhost:5000/reservations
+
+### 12. Rejestracja
 #### Endpoint: POST /register
 #### Body:
 * login (unikalny, 20 > długość > 3, nie może to być: `Not logged client`)
@@ -178,7 +253,7 @@ http://localhost:5000/books/11/reservations/history
 #### Przykładowe zapytanie:
 http://localhost:5000/register
 
-### 12. Logowanie
+### 13. Logowanie
 #### Endpoint: POST /login
 #### Body:
 * login

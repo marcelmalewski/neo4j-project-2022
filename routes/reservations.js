@@ -4,18 +4,37 @@ const driver = require("../config/neo4jDriver");
 const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
 const {
   authenticateToken,
-  checkIfBookWithGivenUuidExists,
   handleInvalidQueryParameter,
   handleNotFound,
 } = require("../utils/routesUtils");
 const {
-  checkIfReservationExistsAndIsNotConfirmed,
   isRentalPeriodInDaysValid,
   checkIfBookIsAlreadyReserved,
+  handleNormalReservationRequest,
+  validateReservation,
 } = require("../utils/reservationsUtils");
 const { ReservationState } = require("../consts/consts");
-//TODO dodać endpoint do każdego zmianu stanu rezerwacji
-//TODO endpoint do pobierania wszystkich rezerwacji danego użytkownika
+
+router.get("/reservations", authenticateToken, (req, res) => {
+  const personLogin = req.person.login;
+  const query = `
+        MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book)
+        RETURN reserved, b
+        `;
+
+  const readTxResult = txRead(query);
+  readTxResult
+    .then((result) => {
+      const reservations = [];
+      result.records.forEach((record) => {
+        const reservation = record.get("reserved").properties;
+        reservation.book = record.get("b").properties;
+        reservations.push(reservation);
+      });
+      res.send(reservations);
+    })
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
+});
 
 router.get("/reservations/history", authenticateToken, (req, res) => {
   const personLogin = req.person.login;
@@ -34,11 +53,11 @@ router.get("/reservations/history", authenticateToken, (req, res) => {
 });
 
 router.post(
-  "/:uuid/reservations",
+  "/books/:bookUuid/reservations",
   authenticateToken,
   checkIfBookIsAlreadyReserved,
   (req, res) => {
-    const bookUuid = req.params.uuid;
+    const bookUuid = req.params.bookUuid;
     const personLogin = req.person.login;
     const rentalPeriodInDays = req.body.rentalPeriodInDays;
     if (!isRentalPeriodInDaysValid(rentalPeriodInDays))
@@ -51,7 +70,7 @@ router.post(
     const query = `
     MATCH (person:Person {login: '${personLogin}'})
     MATCH (book:Book {uuid: '${bookUuid}'})
-    CREATE (person)-[reserved:RESERVED {rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
+    CREATE (person)-[reserved:RESERVED {uuid: apoc.create.uuid(), rental_period_in_days: ${rentalPeriodInDays}, creation_date: date(), state_update_date: date(), state: '${ReservationState.NOT_CONFIRMED}'}]->(book)
     RETURN reserved`;
 
     const writeTxResult = txWrite(query);
@@ -69,13 +88,11 @@ router.post(
 );
 
 router.patch(
-  "/:uuid/reservations",
+  "/reservations/:reservationUuid",
   authenticateToken,
-  checkIfBookWithGivenUuidExists,
-  checkIfReservationExistsAndIsNotConfirmed,
+  validateReservation(ReservationState.NOT_CONFIRMED),
   (req, res) => {
-    const personLogin = req.person.login;
-    const bookUuid = req.params.uuid;
+    const reservationUuid = req.params.reservationUuid;
     const rentalPeriodInDays = req.body.rentalPeriodInDays;
 
     if (!isRentalPeriodInDaysValid(rentalPeriodInDays))
@@ -86,61 +103,88 @@ router.patch(
       );
 
     const query = `
-      MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+      MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
       SET reserved.rental_period_in_days = ${rentalPeriodInDays}
       RETURN reserved`;
 
-    const writeTxResult = txWrite(query);
-    writeTxResult
-      .then((result) => {
-        res.json(result.records[0].get("reserved").properties);
-      })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+    handleNormalReservationRequest(query, res);
   }
 );
 
 router.patch(
-  "/:uuid/reservations/confirm",
+  "/reservations/:reservationUuid/confirm",
   authenticateToken,
-  checkIfBookWithGivenUuidExists,
-  checkIfReservationExistsAndIsNotConfirmed,
+  validateReservation(ReservationState.NOT_CONFIRMED),
   (req, res) => {
-    const personLogin = req.person.login;
-    const bookUuid = req.params.uuid;
+    const reservationUuid = req.params.reservationUuid;
     const query = `
-    MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+    MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
     SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    const writeTxResult = txWrite(query);
-    writeTxResult
-      .then((result) => {
-        res.json(result.records[0].get("reserved").properties);
-      })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+    handleNormalReservationRequest(query, res);
+  }
+);
+
+router.patch(
+  "/reservations/:reservationUuid/waiting",
+  authenticateToken,
+  validateReservation(ReservationState.CONFIRMED),
+  (req, res) => {
+    const reservationUuid = req.params.reservationUuid;
+    const query = `
+    MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
+    SET reserved.state = '${ReservationState.WAITING}', reserved.state_update_date = date()
+    RETURN reserved`;
+
+    handleNormalReservationRequest(query, res);
+  }
+);
+
+router.patch(
+  "/reservations/:reservationUuid/rented-out",
+  authenticateToken,
+  validateReservation(ReservationState.WAITING),
+  (req, res) => {
+    const reservationUuid = req.params.reservationUuid;
+    const query = `
+    MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
+    SET reserved.state = '${ReservationState.RENTED_OUT}', reserved.state_update_date = date()
+    RETURN reserved`;
+
+    handleNormalReservationRequest(query, res);
+  }
+);
+
+router.patch(
+  "/reservations/:reservationUuid/returned",
+  authenticateToken,
+  validateReservation(ReservationState.RENTED_OUT),
+  (req, res) => {
+    const reservationUuid = req.params.reservationUuid;
+    const query = `
+    MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
+    SET reserved.state = '${ReservationState.RETURNED}', reserved.state_update_date = date()
+    RETURN reserved`;
+
+    handleNormalReservationRequest(query, res);
   }
 );
 
 router.delete(
-  "/:uuid/reservations",
+  "/reservations/:reservationUuid",
   authenticateToken,
-  checkIfBookWithGivenUuidExists,
-  checkIfReservationExistsAndIsNotConfirmed,
+  validateReservation(ReservationState.NOT_CONFIRMED),
   (req, res) => {
-    const personLogin = req.person.login;
-    const bookUuid = req.params.uuid;
+    const reservationUuid = req.params.reservationUuid;
     const query = `
-      MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book {uuid: '${bookUuid}'})
+      MATCH (:Person)-[reserved:RESERVED {uuid: '${reservationUuid}'}]->(:Book)
       DELETE reserved`;
 
     const writeTxResult = txWrite(query);
     writeTxResult
       .then(() => {
-        res.json("Reservation deleted");
+        res.json({ message: "Reservation deleted" });
       })
       .catch((error) =>
         res.status(500).send({ message: "error", error: error })

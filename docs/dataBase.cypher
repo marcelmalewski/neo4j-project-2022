@@ -67,8 +67,8 @@ CREATE (person3:Person {login: "4", name: "Krzysztof Krawczyk", role: "CLIENT", 
 CREATE (person4:Person {login: "5", name: "Janusz Kowalski", role: "CLIENT", password: "1234"})
 CREATE (person5:Person {login: "123456", name: "jan library", role: "LIBRARIAN", password: "$2b$10$5uY6LmcDaIQW659AO0/ogOCqevuPPHa8w.EVldcTsQVAnAEWUPa8W"})
 
-CREATE (person5)-[:RATED {uuid: "1", rating: 5, expiry_date: date("2023-12-26")}]->(Harry)
-CREATE (person2)-[:RATED {uuid: "2", rating: 4, expiry_date: date("2023-12-26")}]->(Harry)
+CREATE (person5)-[:RATED {uuid: "1", rating: 5, expiry_date: date("2022-12-26")}]->(Harry)
+CREATE (person2)-[:RATED {uuid: "2", rating: 4, expiry_date: date("2022-12-26")}]->(Harry)
 CREATE (person3)-[:RATED {uuid: "3", rating: 2, expiry_date: date("2023-12-26")}]->(Harry)
 CREATE (person4)-[:RATED {uuid: "4", rating: 9, expiry_date: date("2023-12-26")}]->(b9)
 CREATE (person4)-[:RATED {uuid: "5", rating: 2, expiry_date: date("2023-12-26")}]->(b10)
@@ -78,8 +78,8 @@ CREATE (person2)-[:COMMENTED {uuid: "2", comment: "Not bad", date: datetime("202
 CREATE (person3)-[:COMMENTED {uuid: "3", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 CREATE (notLoggedPerson)-[:COMMENTED {uuid: "4", comment: "I don't like it", date: datetime("2022-12-28T11:17:10.022000000Z")}]->(Harry)
 
-CREATE (person5)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(Harry)
+CREATE (person5)-[:RESERVED {uuid: "1", rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(Harry)
 
-MATCH (p:Person {login: "123456"})
+MATCH (p:Person {login: "2"})
 MATCH (b:Book {title: "Harry Potter"})
-CREATE (p)-[:RESERVED {rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'RETURNED'}]->(b)
+CREATE (p)-[:RESERVED {uuid: "5", rental_period_in_days: 10, creation_date: date(), state_update_date: date(), state: 'NOT CONFIRMED'}]->(b)

@@ -14,7 +14,7 @@ const checkIfCommentWithGivenUuidExists = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 module.exports = {

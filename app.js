@@ -8,39 +8,14 @@ const auth = require("./routes/auth");
 const librarianBooks = require("./routes/librarian/librarianBooks");
 const librarianPersons = require("./routes/librarian/librarianPersons");
 const librarianComments = require("./routes/librarian/librarianComments");
-const { driver } = require("neo4j-driver");
-const { createConstraints } = require("./utils/appUtils");
 
 app.use(express.json());
-
-//TODO Przerobic na scrypt ktory trzeba odpalic przed uruchomieniem aplikacji
-//TODO dodac to do jakiejs instrukcji
-//Przy pierwszym uruchomieniu aplikacji odkomentować poniższą wersja startu serwera
-// i zakomentować tą niżej, ponieważ w darmowej wersji neo4j nie można można dodać
-// tworzenie constraintow pod warunkiem ,że nie istnieją
-
-// try {
-//   app.use("/books", books);
-//   app.use("/books/:id/comments", comments);
-//   app.use("/books/:id/ratings", ratings);
-//   app.use("/books/:id/reservations", reservations);
-//
-//   console.log(`Connected to Neo4J.`);
-//   createConstraints().then(() => {
-//     const port = process.env.PORT || 5000;
-//     app.listen(port, () => {
-//       console.log(`API server listening at http://localhost:${port}`);
-//     });
-//   });
-// } catch (err) {
-//   console.error("Error connecting to Neo4J", err);
-// }
 
 try {
   app.use("/books", books);
   app.use("/books/:bookUuid/comments", comments);
   app.use("", ratings);
-  app.use("/books", reservations);
+  app.use("", reservations);
   app.use("", auth);
   app.use("/librarian/books", librarianBooks);
   app.use("/librarian/persons", librarianPersons);

@@ -48,14 +48,14 @@ const authenticateRoleForLibrarian = (req, res, next) => {
   const role = req.person.role;
   if (role !== "LIBRARIAN")
     return res
-      .status(403)
+      .status(401)
       .send({ message: "The required role is at least 'LIBRARIAN'" });
 
   next();
 };
 
 const checkIfBookWithGivenUuidExists = (req, res, next) => {
-  const bookUuid = req.params.uuid;
+  const bookUuid = req.params.bookUuid;
 
   const query = `
     MATCH (book:Book {uuid: '${bookUuid}'})

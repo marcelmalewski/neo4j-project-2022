@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
+    "constraintsInit": "node ./config/constraintsInit.js",
     "devStart": "nodemon start app.js",
     "prodStart": "node app.js"
   },

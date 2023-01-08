@@ -1,13 +1,39 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const { txWrite } = require("../utils/neo4jSessionUtils");
-const { authenticateToken, handleNotFound } = require("../utils/routesUtils");
+const {
+  authenticateToken,
+  handleNotFound,
+  checkIfBookWithGivenUuidExists,
+} = require("../utils/routesUtils");
 const {
   checkIfBookIsAlreadyRated,
   validateRatingParams,
   checkIfThisRatingExistsAndIsYours,
+  deleteExpiredRatings,
 } = require("../utils/ratingsUtils");
-//TODO przy pobieraniu ocen usuwac te, ktore juz wygasly (ciekawe zapytanie)
+
+router.get(
+  "/books/:bookUuid/ratings",
+  checkIfBookWithGivenUuidExists,
+  deleteExpiredRatings,
+  (req, res) => {
+    const bookUuid = req.params.bookUuid;
+    const query = `
+        MATCH (:Book {uuid: '${bookUuid}'})<-[r:RATED]-(:Person)
+        WHERE r.expiry_date >= date() 
+        RETURN r`;
+
+    const readTxResult = txWrite(query);
+    readTxResult
+      .then((result) => {
+        res.json(result.records.map((record) => record.get("r").properties));
+      })
+      .catch((error) =>
+        res.status(500).send({ message: "error", error: error })
+      );
+  }
+);
 
 router.post(
   "/books/:bookUuid/ratings",

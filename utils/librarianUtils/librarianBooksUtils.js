@@ -123,7 +123,7 @@ const checkIfAuthorsAreValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const checkIfPublishingHouseIsValid = (req, res, next) => {
@@ -141,7 +141,7 @@ const checkIfPublishingHouseIsValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send(error));
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
 const areGenresValid = (genres) => {

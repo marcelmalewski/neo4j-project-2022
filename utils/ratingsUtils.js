@@ -1,4 +1,4 @@
-const { txRead } = require("./neo4jSessionUtils");
+const { txRead, txWrite } = require("./neo4jSessionUtils");
 const {
   isDateValid,
   handleInvalidQueryParameter,
@@ -52,7 +52,7 @@ const validateRatingParams = (req, res, next) => {
 
   next();
 };
-//message: `You can only edit your own rating`,
+
 const checkIfThisRatingExistsAndIsYours = (req, res, next) => {
   const ratingUuid = req.params.ratingUuid;
   const personLogin = req.person.login;
@@ -69,12 +69,26 @@ const checkIfThisRatingExistsAndIsYours = (req, res, next) => {
 
       const person = result.records[0].get("p").properties;
       if (person.login !== personLogin)
-        return res.status(403).send({
+        return res.status(401).send({
           message: `You can only edit your own rating`,
         });
 
       next();
     })
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
+};
+
+const deleteExpiredRatings = (req, res, next) => {
+  const bookUuid = req.params.bookUuid;
+  const query = `
+        MATCH (:Person)-[r:RATED]->(:Book {uuid: '${bookUuid}'})
+        WHERE r.expiry_date < date()
+        DELETE r
+        `;
+
+  const writeTxResult = txWrite(query);
+  writeTxResult
+    .then(() => next())
     .catch((error) => res.status(500).send({ message: "error", error: error }));
 };
 
@@ -84,4 +98,5 @@ module.exports = {
   isExpiryDateValid,
   validateRatingParams,
   checkIfThisRatingExistsAndIsYours,
+  deleteExpiredRatings,
 };

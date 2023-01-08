@@ -75,7 +75,7 @@ router.delete(
     const writeTxResult = txWrite(query);
     writeTxResult
       .then(() => {
-        return res.json("Person Deleted");
+        return res.json({ message: `Person with login ${login} deleted` });
       })
       .catch((error) => {
         res.status(500).send({ message: "error", error: error });

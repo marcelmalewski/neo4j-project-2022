@@ -105,12 +105,12 @@ router.put(
 );
 
 router.delete(
-  "/:uuid",
+  "/:bookUuid",
   authenticateToken,
   authenticateRoleForLibrarian,
   checkIfBookWithGivenUuidExists,
   (req, res) => {
-    const uuid = req.params.uuid;
+    const uuid = req.params.bookUuid;
     const query = `
       MATCH (book:Book {uuid: '${uuid}'})
       DETACH DELETE book`;
