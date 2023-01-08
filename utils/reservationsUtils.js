@@ -79,7 +79,7 @@ const handleWrongState = (correctState, currentState, uuid, res) => {
   });
 };
 
-const handleNormalReservationRequest = (query, res) => {
+const handleSimpleReservationWriteQuery = (query, res) => {
   const writeTxResult = txWrite(query);
   writeTxResult
     .then((result) => {
@@ -102,5 +102,5 @@ module.exports = {
   isRentalPeriodInDaysValid,
   validateReservation,
   checkIfBookIsAlreadyReserved,
-  handleNormalReservationRequest,
+  handleSimpleReservationWriteQuery,
 };

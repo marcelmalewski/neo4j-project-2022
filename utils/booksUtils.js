@@ -1,5 +1,6 @@
 const { SortBy, SortOrder } = require("../consts/consts");
 const { validateGenresArr } = require("./routesUtils");
+const { txRead } = require("./neo4jSessionUtils");
 
 generateGetBooksQuery = (req) => {
   const { title, authors, genres, sortBy, sortOrder } = req.query;
@@ -78,10 +79,20 @@ const isLimitValid = (limit) => {
   return limit === undefined || (Number.isInteger(num) && num > 0);
 };
 
+const handleSimpleBooksReadQuery = (query, res) => {
+  const readTxResult = txRead(query);
+  readTxResult
+    .then((result) => {
+      res.json(result.records.map((record) => record.get("book").properties));
+    })
+    .catch((error) => res.status(500).send({ message: "error", error: error }));
+};
+
 module.exports = {
   generateGetBooksQuery,
   isSortByValid,
   isSortOrderValid,
   areGenresValid,
   isLimitValid,
+  handleSimpleBooksReadQuery,
 };

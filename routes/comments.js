@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const { handleCommentPostRequest } = require("../utils/commentsUtils");
-const { authenticateToken } = require("../utils/routesUtils");
+const {
+  authenticateToken,
+  checkIfBookWithGivenUuidExists,
+} = require("../utils/routesUtils");
 const { txRead } = require("../utils/neo4jSessionUtils");
 //TODO edycja komentarza gdy jest to twoj komentarz?
 
-router.get("", (req, res) => {
+router.get("", checkIfBookWithGivenUuidExists, (req, res) => {
   const bookUuid = req.params.bookUuid;
   const query = `
         MATCH (:Book {uuid: '${bookUuid}'})<-[c:COMMENTED]-(:Person)

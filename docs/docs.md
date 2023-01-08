@@ -103,7 +103,6 @@ http://localhost:5000/books/11/comments
 #### Przykładowe zapytanie:
 http://localhost:5000/books/11/ratings
 
-
 ### 5. Dodawanie oceny książki
 * Książka musi istnieć
 * możliwe tylko dla zalogowanych użytkowników
@@ -364,3 +363,6 @@ Może usunąć dowolny komentarz dowolnego użytkownika.
 #### Przykładowe zapytanie:
 http://localhost:5000/librarian/comments/11
 
+## Zapytania dotyczące statystyk
+
+### 1. 

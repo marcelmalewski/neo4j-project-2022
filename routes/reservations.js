@@ -10,7 +10,7 @@ const {
 const {
   isRentalPeriodInDaysValid,
   checkIfBookIsAlreadyReserved,
-  handleNormalReservationRequest,
+  handleSimpleReservationWriteQuery,
   validateReservation,
 } = require("../utils/reservationsUtils");
 const { ReservationState } = require("../consts/consts");
@@ -107,7 +107,7 @@ router.patch(
       SET reserved.rental_period_in_days = ${rentalPeriodInDays}
       RETURN reserved`;
 
-    handleNormalReservationRequest(query, res);
+    handleSimpleReservationWriteQuery(query, res);
   }
 );
 
@@ -122,7 +122,7 @@ router.patch(
     SET reserved.state = '${ReservationState.CONFIRMED}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    handleNormalReservationRequest(query, res);
+    handleSimpleReservationWriteQuery(query, res);
   }
 );
 
@@ -137,7 +137,7 @@ router.patch(
     SET reserved.state = '${ReservationState.WAITING}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    handleNormalReservationRequest(query, res);
+    handleSimpleReservationWriteQuery(query, res);
   }
 );
 
@@ -152,7 +152,7 @@ router.patch(
     SET reserved.state = '${ReservationState.RENTED_OUT}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    handleNormalReservationRequest(query, res);
+    handleSimpleReservationWriteQuery(query, res);
   }
 );
 
@@ -167,7 +167,7 @@ router.patch(
     SET reserved.state = '${ReservationState.RETURNED}', reserved.state_update_date = date()
     RETURN reserved`;
 
-    handleNormalReservationRequest(query, res);
+    handleSimpleReservationWriteQuery(query, res);
   }
 );
 

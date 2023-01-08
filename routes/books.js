@@ -7,6 +7,7 @@ const {
   areGenresValid,
   isSortOrderValid,
   isLimitValid,
+  handleSimpleBooksReadQuery,
 } = require("../utils/booksUtils");
 const {
   handleNotFound,
@@ -30,12 +31,7 @@ router.get("/", (req, res) => {
     return handleInvalidQueryParameter(res, "genres", genres);
 
   const query = generateGetBooksQuery(req);
-  const readTxResult = txRead(query);
-  readTxResult
-    .then((result) => {
-      res.json(result.records.map((record) => record.get("book").properties));
-    })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+  handleSimpleBooksReadQuery(query, res);
 });
 
 router.get("/popular/:limit", (req, res) => {
@@ -51,12 +47,7 @@ router.get("/popular/:limit", (req, res) => {
     ORDER BY ratings DESC
     LIMIT ${limit}`;
 
-  const readTxResult = txRead(query);
-  readTxResult
-    .then((result) => {
-      res.json(result.records.map((record) => record.get("book").properties));
-    })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+  handleSimpleBooksReadQuery(query, res);
 });
 
 router.get("/details/:uuid", (req, res) => {
