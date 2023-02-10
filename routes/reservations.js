@@ -1,26 +1,35 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const driver = require("../config/neo4jDriver");
 const { txWrite, txRead } = require("../utils/neo4jSessionUtils");
 const {
   authenticateToken,
   handleInvalidQueryParameter,
   handleNotFound,
+  handleError500,
 } = require("../utils/routesUtils");
 const {
   isRentalPeriodInDaysValid,
   checkIfBookIsAlreadyReserved,
   handleSimpleReservationWriteQuery,
   validateReservation,
+  isHistoryParamValid,
 } = require("../utils/reservationsUtils");
 const { ReservationState } = require("../consts/consts");
 
 router.get("/reservations", authenticateToken, (req, res) => {
   const personLogin = req.person.login;
-  const query = `
-        MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book)
-        RETURN reserved, b
-        `;
+  const history = req.query.history;
+
+  if (!isHistoryParamValid(history))
+    return handleInvalidQueryParameter(res, "history", history);
+
+  let query = `MATCH (:Person {login: '${personLogin}'})-[reserved:RESERVED]->(b:Book) `;
+
+  if (history === undefined || history === "false")
+    query += `RETURN reserved, b ORDER BY reserved.state_update_date DESC`;
+  else
+    query += `WHERE reserved.state = 'RETURNED' 
+              RETURN reserved, b ORDER BY reserved.state_update_date DESC`;
 
   const readTxResult = txRead(query);
   readTxResult
@@ -31,25 +40,9 @@ router.get("/reservations", authenticateToken, (req, res) => {
         reservation.book = record.get("b").properties;
         reservations.push(reservation);
       });
-      res.send(reservations);
+      res.send({ message: "success", data: reservations });
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
-});
-
-router.get("/reservations/history", authenticateToken, (req, res) => {
-  const personLogin = req.person.login;
-  const query = `MATCH (p:Person {login: '${personLogin}'})-[reserved:RESERVED]->(:Book)
-                WHERE reserved.state = 'RETURNED'
-                RETURN reserved ORDER BY reserved.state_update_date DESC`;
-
-  const session = driver.session();
-  const readTxResult = txRead(session, query);
-  readTxResult
-    .then((result) => {
-      res.json(result.records[0].get("reserved").properties);
-    })
-    .catch((error) => res.status(500).send({ message: "error", error: error }))
-    .then(() => session.close());
+    .catch((error) => handleError500(res, error));
 });
 
 router.post(
@@ -79,11 +72,10 @@ router.post(
         if (result.records.length === 0)
           return handleNotFound("Book", "uuid", bookUuid, res);
 
-        res.json(result.records[0].get("reserved").properties);
+        const data = result.records[0].get("reserved").properties;
+        res.json({ message: "success", data: data });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 
@@ -186,9 +178,7 @@ router.delete(
       .then(() => {
         res.json({ message: "Reservation deleted" });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 

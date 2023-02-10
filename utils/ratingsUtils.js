@@ -3,10 +3,11 @@ const {
   isDateValid,
   handleInvalidQueryParameter,
   handleNotFound,
+  handleError500,
 } = require("./routesUtils");
 
 const checkIfBookIsAlreadyRated = (req, res, next) => {
-  const bookUuid = req.params.uuid;
+  const bookUuid = req.params.bookUuid;
   const personLogin = req.person.login;
   const query = `
     MATCH (:Book {uuid: '${bookUuid}'})<-[rated:RATED]-(:Person {login: '${personLogin}'})
@@ -23,7 +24,7 @@ const checkIfBookIsAlreadyRated = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const isRatingValid = (rating) => {
@@ -75,7 +76,7 @@ const checkIfThisRatingExistsAndIsYours = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const deleteExpiredRatings = (req, res, next) => {
@@ -87,9 +88,7 @@ const deleteExpiredRatings = (req, res, next) => {
         `;
 
   const writeTxResult = txWrite(query);
-  writeTxResult
-    .then(() => next())
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+  writeTxResult.then(() => next()).catch((error) => handleError500(res, error));
 };
 
 module.exports = {

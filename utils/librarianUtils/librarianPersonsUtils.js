@@ -1,6 +1,6 @@
 const { Roles } = require("../../consts/consts");
 const { txRead } = require("../neo4jSessionUtils");
-const { handleNotFound } = require("../routesUtils");
+const { handleNotFound, handleError500 } = require("../routesUtils");
 
 const roleIsValid = (role) => {
   return (
@@ -9,7 +9,7 @@ const roleIsValid = (role) => {
 };
 
 const checkIfPersonWithGivenLoginExists = (req, res, next) => {
-  const login = req.param.login;
+  const login = req.params.login;
 
   const query = `
         MATCH (p:Person {login: '${login}'})
@@ -23,7 +23,7 @@ const checkIfPersonWithGivenLoginExists = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 module.exports = {

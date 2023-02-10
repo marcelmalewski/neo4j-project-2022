@@ -8,6 +8,10 @@ const handleNotFound = (name, withWhat, withWhatValue, res) => {
   });
 };
 
+const handleError500 = (res, error) => {
+  return res.status(500).send({ message: "error", error: error });
+};
+
 const handleInvalidQueryParameter = (res, parameterName, parameterValue) => {
   return res.status(400).send({
     message: `Invalid query parameter: ${parameterName} with value: '${parameterValue}'.`,
@@ -15,7 +19,8 @@ const handleInvalidQueryParameter = (res, parameterName, parameterValue) => {
 };
 
 const isParamEmpty = (param) => {
-  return param === undefined || param.trim() === "";
+  if (param === undefined || typeof param !== "string") return true;
+  return param.trim() === "";
 };
 
 const isDateValid = (date) => {
@@ -40,7 +45,20 @@ const authenticateToken = (req, res, next) => {
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, person) => {
     if (err) return res.sendStatus(403);
     req.person = person;
-    next();
+
+    const query = `
+    MATCH (person:Person {login: '${person.login}'})
+    RETURN person
+    `;
+    const readTxResult = txRead(query);
+    readTxResult
+      .then((result) => {
+        if (result.records.length === 0)
+          return handleNotFound("Person", "login from jwt", person.login, res);
+
+        next();
+      })
+      .catch((error) => handleError500(res, error));
   });
 };
 
@@ -69,7 +87,7 @@ const checkIfBookWithGivenUuidExists = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const validateGenresArr = (genres) => {
@@ -90,4 +108,5 @@ module.exports = {
   isDateValid,
   validateGenresArr,
   authenticateRoleForLibrarian,
+  handleError500,
 };

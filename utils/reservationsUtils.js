@@ -1,5 +1,6 @@
-const { handleNotFound } = require("./routesUtils");
+const { handleNotFound, handleError500 } = require("./routesUtils");
 const { txRead, txWrite } = require("./neo4jSessionUtils");
+const { ReservationState } = require("../consts/consts");
 
 const validateReservation = (correctReservationState) => {
   return (req, res, next) => {
@@ -34,9 +35,7 @@ const validateReservation = (correctReservationState) => {
 
         next();
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   };
 };
 
@@ -70,7 +69,7 @@ const checkIfBookIsAlreadyReserved = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const handleWrongState = (correctState, currentState, uuid, res) => {
@@ -83,9 +82,10 @@ const handleSimpleReservationWriteQuery = (query, res) => {
   const writeTxResult = txWrite(query);
   writeTxResult
     .then((result) => {
-      res.json(result.records[0].get("reserved").properties);
+      const data = result.records[0].get("reserved").properties;
+      res.json({ message: "success", data: data });
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const isRentalPeriodInDaysValid = (rentalPeriodInDays) => {
@@ -98,9 +98,15 @@ const isRentalPeriodInDaysValid = (rentalPeriodInDays) => {
   );
 };
 
+const isHistoryParamValid = (history) => {
+  return history === undefined || history === "true" || history === "false";
+};
+
 module.exports = {
   isRentalPeriodInDaysValid,
   validateReservation,
   checkIfBookIsAlreadyReserved,
   handleSimpleReservationWriteQuery,
+  isHistoryParamValid,
+  handleWrongState,
 };

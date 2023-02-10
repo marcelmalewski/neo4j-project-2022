@@ -1,4 +1,5 @@
 const { txRead } = require("../neo4jSessionUtils");
+const { handleNotFound, handleError500 } = require("../routesUtils");
 const checkIfCommentWithGivenUuidExists = (req, res, next) => {
   const commentUuid = req.params.commentUuid;
 
@@ -14,7 +15,7 @@ const checkIfCommentWithGivenUuidExists = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 module.exports = {

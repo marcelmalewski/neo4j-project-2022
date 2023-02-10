@@ -4,8 +4,10 @@ const {
   validateGenresArr,
   handleNotFound,
   isDateValid,
+  handleError500,
 } = require("../routesUtils");
 const { txRead } = require("../neo4jSessionUtils");
+const { ReservationState } = require("../../consts/consts");
 
 const createPostBookQuery = (
   title,
@@ -123,7 +125,7 @@ const checkIfAuthorsAreValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const checkIfPublishingHouseIsValid = (req, res, next) => {
@@ -141,7 +143,7 @@ const checkIfPublishingHouseIsValid = (req, res, next) => {
 
       next();
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 const areGenresValid = (genres) => {
@@ -174,6 +176,26 @@ const validateBookParams = (req, res, next) => {
   next();
 };
 
+const checkIfBookIsReturned = (req, res, next) => {
+  const { bookUuid } = req.params;
+
+  const query = `
+    MATCH (:Book {uuid: '${bookUuid}'})<-[r:RESERVED]-(:Person) 
+    WHERE NOT r.state = '${ReservationState.RETURNED}'
+    RETURN r`;
+  const readTxResult = txRead(query);
+  readTxResult
+    .then((result) => {
+      if (result.records.length > 0)
+        return res.status(400).send({
+          message: `Book with uuid: '${bookUuid}' is not 'RETURNED', so it can not be deleted.`,
+        });
+
+      next();
+    })
+    .catch((error) => handleError500(res, error));
+};
+
 module.exports = {
   checkIfAuthorsAreValid,
   checkIfPublishingHouseIsValid,
@@ -181,4 +203,5 @@ module.exports = {
   createPostBookQuery,
   validateBookParams,
   createPutBookQuery,
+  checkIfBookIsReturned,
 };

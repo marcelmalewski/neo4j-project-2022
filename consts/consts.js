@@ -31,10 +31,16 @@ const ReservationState = {
   RETURNED: "RETURNED",
 };
 
+const NotLoggedPerson = {
+  LOGIN: "1",
+  NAME: "Not logged person",
+};
+
 module.exports = {
   Genres,
   Roles,
   SortBy,
   SortOrder,
   ReservationState,
+  NotLoggedPerson,
 };

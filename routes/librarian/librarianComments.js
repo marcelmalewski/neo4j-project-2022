@@ -4,6 +4,7 @@ const {
   authenticateRoleForLibrarian,
   handleInvalidQueryParameter,
   handleNotFound,
+  handleError500,
 } = require("../../utils/routesUtils");
 const { isCommentValid } = require("../../utils/commentsUtils");
 const { txWrite } = require("../../utils/neo4jSessionUtils");
@@ -11,13 +12,13 @@ const {
   checkIfCommentWithGivenUuidExists,
 } = require("../../utils/librarianUtils/librarianCommentsUtils");
 const router = express.Router({ mergeParams: true });
-router.put(
+router.patch(
   "/:commentUuid",
   authenticateToken,
   authenticateRoleForLibrarian,
   (req, res) => {
     const comment = req.body.comment;
-    if (isCommentValid(comment))
+    if (!isCommentValid(comment))
       return handleInvalidQueryParameter(res, "comment", comment);
 
     const commentUuid = req.params.commentUuid;
@@ -31,12 +32,10 @@ router.put(
       .then((result) => {
         if (result.records.length === 0)
           return handleNotFound("Comment", "uuid", commentUuid, res);
-
-        res.json(result.records.map((record) => record.get("c").properties));
+        const data = result.records.map((record) => record.get("c").properties);
+        res.json({ message: "success", data: data });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 
@@ -56,9 +55,7 @@ router.delete(
       .then(() => {
         res.json({ message: "Comment deleted" });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 

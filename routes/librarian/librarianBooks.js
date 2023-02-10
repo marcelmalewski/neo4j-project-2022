@@ -6,6 +6,7 @@ const {
   handleNotFound,
   authenticateRoleForLibrarian,
   checkIfBookWithGivenUuidExists,
+  handleError500,
 } = require("../../utils/routesUtils");
 const {
   checkIfPublishingHouseIsValid,
@@ -13,6 +14,7 @@ const {
   validateBookParams,
   createPutBookQuery,
   checkIfAuthorsAreValid,
+  checkIfBookIsReturned,
 } = require("../../utils/librarianUtils/librarianBooksUtils");
 
 router.post(
@@ -49,11 +51,12 @@ router.post(
     const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
-        res.status(201).send(result.records[0].get("b").properties);
+        res.status(201).send({
+          message: "success",
+          data: result.records[0].get("b").properties,
+        });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 
@@ -96,11 +99,12 @@ router.put(
         if (result.records.length === 0)
           return handleNotFound("Book", "uuid", uuid, res);
 
-        res.json(result.records[0].get("b").properties);
+        res.json({
+          message: "success",
+          data: result.records[0].get("b").properties,
+        });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 
@@ -109,6 +113,7 @@ router.delete(
   authenticateToken,
   authenticateRoleForLibrarian,
   checkIfBookWithGivenUuidExists,
+  checkIfBookIsReturned,
   (req, res) => {
     const uuid = req.params.bookUuid;
     const query = `
@@ -120,9 +125,7 @@ router.delete(
       .then(() => {
         res.json({ message: "Book deleted" });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 

@@ -3,11 +3,13 @@ const {
   sendRegisterRequest,
   validPersonParams,
   hashPassword,
+  checkIfPersonDoNotHaveRentedBookWithLoginWrapper,
 } = require("../../utils/authUtils");
 const {
   handleInvalidQueryParameter,
   authenticateToken,
   authenticateRoleForLibrarian,
+  handleError500,
 } = require("../../utils/routesUtils");
 const {
   roleIsValid,
@@ -16,8 +18,24 @@ const {
 const { txWrite } = require("../../utils/neo4jSessionUtils");
 const router = express.Router({ mergeParams: true });
 
+router.get("", authenticateToken, authenticateRoleForLibrarian, (req, res) => {
+  const query = `
+    MATCH (person:Person)
+    RETURN person
+  `;
+  const readTxResult = txWrite(query);
+  readTxResult
+    .then((result) => {
+      const data = result.records.map((record) => {
+        return record.get("person").properties;
+      });
+      res.json({ message: "success", data: data });
+    })
+    .catch((error) => handleError500(res, error));
+});
+
 router.post(
-  "/",
+  "",
   authenticateToken,
   authenticateRoleForLibrarian,
   validPersonParams,
@@ -34,12 +52,12 @@ router.post(
     CREATE (person:Person {login: '${login}', name: '${name}', role: '${role}', password: '${hashedPassword}'})
     RETURN person
     `;
-    return await sendRegisterRequest(res, query, message);
+    return await sendRegisterRequest(res, query, message, login);
   }
 );
 
 router.put(
-  "/",
+  "",
   authenticateToken,
   authenticateRoleForLibrarian,
   validPersonParams,
@@ -57,7 +75,7 @@ router.put(
         SET person.name = '${name}', person.role = '${role}', person.password = '${hashedPassword}'
         RETURN person
         `;
-    return await sendRegisterRequest(res, query, message);
+    return await sendRegisterRequest(res, query, message, login);
   }
 );
 
@@ -66,8 +84,10 @@ router.delete(
   authenticateToken,
   authenticateRoleForLibrarian,
   checkIfPersonWithGivenLoginExists,
+  checkIfPersonDoNotHaveRentedBookWithLoginWrapper(true),
   (req, res) => {
-    const { login } = req.params;
+    const login = req.params.login;
+
     const query = `
             MATCH (person:Person {login: '${login}'})
             DETACH DELETE person
@@ -77,9 +97,7 @@ router.delete(
       .then(() => {
         return res.json({ message: `Person with login ${login} deleted` });
       })
-      .catch((error) => {
-        res.status(500).send({ message: "error", error: error });
-      });
+      .catch((error) => handleError500(res, error));
   }
 );
 

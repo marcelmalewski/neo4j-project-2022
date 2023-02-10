@@ -1,9 +1,10 @@
 const { SortBy, SortOrder } = require("../consts/consts");
-const { validateGenresArr } = require("./routesUtils");
+const { validateGenresArr, handleError500 } = require("./routesUtils");
 const { txRead } = require("./neo4jSessionUtils");
 
 generateGetBooksQuery = (req) => {
-  const { title, authors, genres, sortBy, sortOrder } = req.query;
+  const { title, authors, genres, sortOrder } = req.query;
+  const sortBy = req.query.sortBy ? req.query.sortBy.toUpperCase() : undefined;
   let query =
     sortBy === SortBy.AVGRATING
       ? "MATCH (book:Book)<-[rated:RATED]-(:Person)"
@@ -71,7 +72,7 @@ const areGenresValid = (genres) => {
   if (genres === undefined) return true;
 
   const genresAsArr = genres.split(",");
-  validateGenresArr(genresAsArr);
+  return validateGenresArr(genresAsArr);
 };
 
 const isLimitValid = (limit) => {
@@ -83,9 +84,12 @@ const handleSimpleBooksReadQuery = (query, res) => {
   const readTxResult = txRead(query);
   readTxResult
     .then((result) => {
-      res.json(result.records.map((record) => record.get("book").properties));
+      const data = result.records.map(
+        (record) => record.get("book").properties
+      );
+      res.json({ message: "success", data: data });
     })
-    .catch((error) => res.status(500).send({ message: "error", error: error }));
+    .catch((error) => handleError500(res, error));
 };
 
 module.exports = {

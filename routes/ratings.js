@@ -5,6 +5,7 @@ const {
   authenticateToken,
   handleNotFound,
   checkIfBookWithGivenUuidExists,
+  handleError500,
 } = require("../utils/routesUtils");
 const {
   checkIfBookIsAlreadyRated,
@@ -21,13 +22,13 @@ router.get(
     const bookUuid = req.params.bookUuid;
     const query = `
         MATCH (:Book {uuid: '${bookUuid}'})<-[r:RATED]-(:Person)
-        WHERE r.expiry_date >= date() 
         RETURN r`;
 
     const readTxResult = txWrite(query);
     readTxResult
       .then((result) => {
-        res.json(result.records.map((record) => record.get("r").properties));
+        const data = result.records.map((record) => record.get("r").properties);
+        res.json({ message: "success", data: data });
       })
       .catch((error) =>
         res.status(500).send({ message: "error", error: error })
@@ -59,7 +60,8 @@ router.post(
         if (result.records.length === 0)
           return handleNotFound("Book", "uuid", bookUuid, res);
 
-        res.json(result.records[0].get("rated").properties);
+        const data = result.records[0].get("rated").properties;
+        res.json({ message: "success", data: data });
       })
       .catch((error) =>
         res.status(500).send({ message: "error", error: error })
@@ -86,11 +88,10 @@ router.put(
     const writeTxResult = txWrite(query);
     writeTxResult
       .then((result) => {
-        res.json(result.records[0].get("r").properties);
+        const data = result.records[0].get("r").properties;
+        res.json({ message: "success", data: data });
       })
-      .catch((error) =>
-        res.status(500).send({ message: "error", error: error })
-      );
+      .catch((error) => handleError500(res, error));
   }
 );
 
