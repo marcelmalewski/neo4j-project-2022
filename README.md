@@ -1,2 +1,3 @@
-# Instrukcja uruchamiania serwera: `docs/docs.md`
-# Tam też jest opisany każdy endpoint co potrzebuje do działania i wymagania co do parametrów.
+# Documentation: `docs/docs.md`
+1. Server Startup Instructions
+2. It also includes a description of each endpoint, including the required inputs and parameter requirements."
